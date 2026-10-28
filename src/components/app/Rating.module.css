@@ -1,0 +1,24 @@
+.rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-muted);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.rating svg {
+  color: var(--star);
+}
+
+.sm {
+  font-size: var(--text-xs);
+}
+
+.md {
+  font-size: var(--text-sm);
+}
+
+.count {
+  margin-left: 2px;
+}

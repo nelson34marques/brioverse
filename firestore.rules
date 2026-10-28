@@ -1,0 +1,214 @@
+rules_version = '2';
+
+// Regras de segurança do Brioverse (ver docs/PLANO.md §6 e "Contas dev e admin").
+// Colar em: Firebase Console > Firestore Database > Rules
+//
+// Papéis (users/{uid}.role): consumer | developer | admin.
+// O primeiro admin define-se à mão na consola (editar o campo role do próprio documento).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // email confirmado (Google vem confirmado; email/senha confirma pelo link enviado ao registar)
+    function verified() {
+      return signedIn() && request.auth.token.email_verified == true;
+    }
+
+    function role() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return signedIn() && role() == 'admin';
+    }
+
+    // a escrita só mexe no campo stats
+    function onlyStats() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats']);
+    }
+
+    function isUrl(s) {
+      return s is string && s.size() <= 300 && s.matches('https?://.*');
+    }
+
+    // links de apps: só https, até 400 caracteres
+    function isHttps(s) {
+      return s is string && s.size() <= 400 && s.matches('https://.*');
+    }
+
+    function optHttps(d, k) {
+      return !(k in d) || d[k] == null || isHttps(d[k]);
+    }
+
+    // dados que o criador preenche em apps/{id} (Publicar / Actualizar)
+    function validApp(d) {
+      return d.title is string && d.title.size() >= 2 && d.title.size() <= 60
+        && d.slug is string && d.slug.size() <= 60
+        && d.shortDescription is string && d.shortDescription.size() >= 10 && d.shortDescription.size() <= 90
+        && d.fullDescription is string && d.fullDescription.size() >= 40 && d.fullDescription.size() <= 2000
+        && d.category is string && d.category.size() <= 30
+        && d.type in ['pwa', 'apk']
+        && d.developerName is string && d.developerName.size() <= 80
+        && isHttps(d.appUrl)
+        && optHttps(d, 'apkUrl') && optHttps(d, 'webUrl') && optHttps(d, 'desktopUrl')
+        && isHttps(d.iconUrl)
+        && d.screenshots is list && d.screenshots.size() >= 2 && d.screenshots.size() <= 5
+        && d.keywords is list && d.keywords.size() <= 10
+        && d.version is string && d.version.size() >= 1 && d.version.size() <= 20
+        && d.versionCode is int && d.versionCode >= 1
+        && d.changelog is string && d.changelog.size() <= 500
+        && d.releases is list && d.releases.size() <= 10
+        && (!('apkSizeMb' in d) || d.apkSizeMb == null || (d.apkSizeMb is number && d.apkSizeMb >= 0 && d.apkSizeMb <= 5000))
+        && (!('disabledReason' in d) || d.disabledReason is string);
+    }
+
+    // dados que o próprio criador preenche na candidatura (developers/{uid})
+    function validDeveloper(d) {
+      return d.kind in ['individual', 'company']
+        && d.name is string && d.name.size() >= 2 && d.name.size() <= 80
+        && d.description is string && d.description.size() >= 80 && d.description.size() <= 1000
+        && isUrl(d.website)
+        && isUrl(d.sampleUrl)
+        && (d.repo == '' || isUrl(d.repo))
+        && d.contactEmail is string && d.contactEmail.size() <= 120
+        && d.legalName is string && d.legalName.size() <= 80
+        && d.registration is string && d.registration.size() <= 80;
+    }
+
+    // users/{uid} — tem nome e email: só o próprio e o admin lêem
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid)
+        && request.resource.data.role == 'consumer';
+      // o próprio pode editar o perfil, mas nunca o campo role; o admin muda o role (aprovar/revogar dev)
+      allow update: if (isOwner(uid) && request.resource.data.role == resource.data.role)
+        || isAdmin();
+      allow delete: if false;
+
+      // biblioteca: apps que a pessoa abriu/baixou (para avisos de versão nova); só o próprio
+      match /library/{appId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // developers/{uid} — candidatura / conta de desenvolvedor
+    match /developers/{uid} {
+      // contém contactos: só o próprio e o admin
+      allow read: if isOwner(uid) || isAdmin();
+
+      allow create: if isOwner(uid)
+        && verified()
+        && request.resource.data.uid == uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.verified == false
+        && validDeveloper(request.resource.data);
+
+      // o próprio corrige os dados (recusada volta a "pending"); nunca mexe em verified/note/reviewed*;
+      // uma conta revogada não pode ser editada pelo próprio. O admin pode tudo.
+      allow update: if isAdmin()
+        || (isOwner(uid)
+          && verified()
+          && validDeveloper(request.resource.data)
+          && resource.data.status in ['pending', 'approved', 'rejected']
+          && request.resource.data.status == (resource.data.status == 'rejected' ? 'pending' : resource.data.status)
+          && request.resource.data.verified == resource.data.verified
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['uid', 'note', 'reviewedAt', 'reviewedBy']));
+
+      allow delete: if isAdmin();
+    }
+
+    // notifications/{id} — avisos do admin para um utilizador (app desactivado, candidatura, etc.)
+    match /notifications/{id} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isAdmin();
+      // o destinatário só marca como lido
+      allow update: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    // apps/{appId}
+    match /apps/{appId} {
+      // público só vê aprovados; o criador e o admin vêem tudo (pending, disabled, rejected)
+      allow read: if resource.data.status == 'approved'
+        || (signedIn() && resource.data.developerId == request.auth.uid)
+        || isAdmin();
+
+      // criar: só developers, sempre como pending, sem destaque/impulso, com o próprio uid e conteúdo válido
+      allow create: if verified()
+        && (role() == 'developer' || role() == 'admin')
+        && request.resource.data.developerId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.verified == false
+        && request.resource.data.get('featured', false) == false
+        && request.resource.data.get('boost', 0) == 0
+        && request.resource.data.versionCode == 1
+        && validApp(request.resource.data);
+
+      // editar: o admin (status, featured, boost, verified, disabledReason…);
+      // qualquer utilizador autenticado só pode tocar em stats.rating* (actualizado ao avaliar);
+      // qualquer pessoa pode somar exactamente 1 a stats.views ou stats.clicks (contadores);
+      // o criador edita o seu app (conteúdo válido, nova versão/novidades, pausar/retomar; recusado volta
+      // a pending; não mexe em verified/featured/boost/stats/disabledReason nem sai de 'disabled')
+      allow update: if isAdmin()
+        || (signedIn()
+          && onlyStats()
+          && request.resource.data.stats.diff(resource.data.stats).affectedKeys()
+              .hasOnly(['ratingAvg', 'ratingCount', 'ratingSum'])
+          // só pode entrar/sair/mudar uma avaliação de cada vez (1..5 estrelas)
+          && request.resource.data.stats.ratingCount - resource.data.stats.get('ratingCount', 0) in [-1, 0, 1]
+          && request.resource.data.stats.ratingSum - resource.data.stats.get('ratingSum', 0) >= -5
+          && request.resource.data.stats.ratingSum - resource.data.stats.get('ratingSum', 0) <= 5
+          && request.resource.data.stats.ratingAvg >= 0
+          && request.resource.data.stats.ratingAvg <= 5)
+        || (onlyStats()
+          && request.resource.data.stats.diff(resource.data.stats).affectedKeys()
+              .hasOnly(['views', 'clicks'])
+          && request.resource.data.stats.get('views', 0) - resource.data.stats.get('views', 0) in [0, 1]
+          && request.resource.data.stats.get('clicks', 0) - resource.data.stats.get('clicks', 0) in [0, 1])
+        || (verified()
+          && resource.data.developerId == request.auth.uid
+          && resource.data.status != 'disabled'
+          && request.resource.data.developerId == resource.data.developerId
+          && validApp(request.resource.data)
+          && request.resource.data.versionCode >= resource.data.versionCode
+          && request.resource.data.get('disabledReason', '') == resource.data.get('disabledReason', '')
+          && (request.resource.data.status == resource.data.status
+            || (resource.data.status == 'rejected' && request.resource.data.status == 'pending')
+            || (resource.data.status == 'approved' && request.resource.data.status == 'paused')
+            || (resource.data.status == 'paused' && request.resource.data.status == 'approved'))
+          && request.resource.data.verified == resource.data.verified
+          && request.resource.data.get('featured', false) == resource.data.get('featured', false)
+          && request.resource.data.get('boost', 0) == resource.data.get('boost', 0)
+          && request.resource.data.stats == resource.data.stats);
+
+      // o criador pode eliminar o seu app de vez
+      allow delete: if isAdmin() || (verified() && resource.data.developerId == request.auth.uid);
+    }
+
+    // reviews/{appId_userId}
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create, update: if verified()
+        && request.resource.data.userId == request.auth.uid
+        && reviewId == request.resource.data.appId + '_' + request.auth.uid
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 1000
+        && request.resource.data.userName is string
+        && request.resource.data.userName.size() <= 80;
+      allow delete: if signedIn()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+  }
+}

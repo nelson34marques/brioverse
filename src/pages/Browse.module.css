@@ -1,0 +1,104 @@
+/* Partilhado por Apps, Categoria e Pesquisa */
+.page {
+  max-width: 1040px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  margin-bottom: var(--s-5);
+}
+
+.title {
+  font-size: var(--fs-2xl);
+  letter-spacing: -0.025em;
+}
+
+.count {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.chips {
+  margin-bottom: var(--s-5);
+}
+
+/* uma só fila: tipo à esquerda, ordem à direita. Em ecrãs estreitos
+   desliza na horizontal (sem barra visível) em vez de quebrar linha. */
+.filtersClip {
+  overflow-y: clip;
+  padding-bottom: var(--s-4);
+  margin-bottom: var(--s-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* +24px em baixo para a barra de rolagem, recortados pelo .filtersClip */
+  padding-bottom: 24px;
+  margin-bottom: -24px;
+  /* sangra até às margens para os chips não parecerem cortados */
+  margin-inline: calc(-1 * var(--gutter));
+  padding-inline: var(--gutter);
+}
+
+.filters::-webkit-scrollbar {
+  display: none;
+}
+
+.group {
+  display: flex;
+  flex: 0 0 auto;
+  gap: var(--s-2);
+}
+
+.sort {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding-left: var(--s-2);
+}
+
+.searchBar {
+  margin-bottom: var(--s-5);
+}
+
+/* no desktop a pesquisa já está no header */
+@media (min-width: 768px) {
+  .searchBar {
+    display: none;
+  }
+}
+
+.empty {
+  padding: var(--s-16) var(--s-4);
+  text-align: center;
+  color: var(--text-2);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.list > li {
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .list {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: var(--s-8);
+  }
+
+  .title {
+    font-size: var(--fs-3xl);
+  }
+}

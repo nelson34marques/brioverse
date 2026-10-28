@@ -1,0 +1,45 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.wrap > * {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--s-3);
+  white-space: nowrap;
+}
+
+.main {
+  gap: var(--s-2);
+}
+
+.sub {
+  font-weight: 400;
+  opacity: 0.85;
+  font-size: var(--text-sm);
+}
+
+/* em ecrãs estreitos o tamanho do APK não cabe ao lado do texto */
+@media (max-width: 479px) {
+  .sub {
+    display: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .wrap {
+    gap: var(--s-3);
+  }
+
+  .wrap > * {
+    flex: 0 0 auto;
+    padding-inline: 28px;
+  }
+
+  .main {
+    min-width: 200px;
+  }
+}

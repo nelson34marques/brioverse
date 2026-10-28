@@ -1,0 +1,280 @@
+.page {
+  max-width: 960px;
+}
+
+/* PC: a galeria estende-se para a direita, até ao limite do container,
+   para as 5 capturas caberem inteiras (coluna de 960px + margem direita) */
+@media (min-width: 1100px) {
+  .gallery {
+    width: calc(50% + (min(100vw - 20px, var(--container)) - 2 * var(--gutter)) / 2);
+  }
+}
+
+.head {
+  display: flex;
+  gap: var(--s-4);
+  align-items: flex-start;
+  margin-bottom: var(--s-6);
+}
+
+.icon {
+  width: 96px !important;
+  height: 96px !important;
+}
+
+.headText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.title {
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.dev {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-base);
+  font-weight: 500;
+}
+
+.dev a {
+  color: var(--accent);
+}
+
+.verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-1);
+}
+
+/* faixa de estatísticas com divisores (Play) */
+.stats {
+  display: flex;
+  margin-bottom: var(--s-6);
+}
+
+.stats li {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--s-2) var(--s-3);
+}
+
+.stats li + li {
+  border-left: 1px solid var(--border-strong);
+}
+
+.statValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--fs-md);
+  font-weight: 700;
+}
+
+.statLabel {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-12);
+}
+
+/* os botões Abrir/Baixar + Como instalar ocupam o espaço; partilhar fica fixo à direita */
+.actions > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* "Na tua biblioteca" / "Nova versão" por baixo dos botões */
+.whatsMeta {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: var(--s-2);
+}
+
+.section {
+  margin-bottom: var(--s-12);
+}
+
+.h2 {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-bottom: var(--s-4);
+}
+
+.short {
+  font-weight: 600;
+  margin-bottom: var(--s-2);
+}
+
+.desc {
+  color: var(--text-2);
+  white-space: pre-line;
+  line-height: 1.65;
+  max-width: 72ch;
+}
+
+.more {
+  margin-top: var(--s-2);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+
+.info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-4) var(--s-6);
+}
+
+.info dt {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  margin-bottom: 2px;
+}
+
+.info dd {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+
+.reviewCta {
+  margin-top: var(--s-5);
+}
+
+/* skeleton */
+.skelHead {
+  display: flex;
+  gap: var(--s-4);
+}
+
+.skelIcon {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--r-icon);
+  background: var(--surface);
+}
+
+.skelLines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.skelLines div {
+  height: 16px;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+
+.skelLines div:first-child {
+  width: 60%;
+  height: 28px;
+}
+
+.skelLines div:nth-child(2) {
+  width: 40%;
+}
+
+.skelLines div:nth-child(3) {
+  width: 30%;
+}
+
+@media (min-width: 640px) {
+  .head {
+    gap: var(--s-6);
+    margin-bottom: var(--s-5);
+  }
+
+  .icon {
+    width: 128px !important;
+    height: 128px !important;
+  }
+
+  .title {
+    font-size: var(--fs-3xl);
+  }
+
+  .stats {
+    justify-content: flex-start;
+    margin-bottom: var(--s-8);
+  }
+
+  .stats li {
+    flex: 0 0 auto;
+    align-items: flex-start;
+    padding: var(--s-1) var(--s-6);
+  }
+
+  .stats li:first-child {
+    padding-left: 0;
+  }
+
+  .statLabel {
+    text-align: left;
+  }
+
+  .actions {
+    gap: var(--s-3);
+  }
+
+  .actions > :first-child {
+    flex: 0 1 auto;
+  }
+
+  .info {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.shareIcon {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: var(--r-btn);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  transition: background var(--t);
+}
+
+.shareIcon:hover {
+  background: var(--accent-soft);
+}
+
+.copied {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding-inline: 6px;
+}

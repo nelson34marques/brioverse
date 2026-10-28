@@ -1,0 +1,72 @@
+.form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.icon {
+  position: absolute;
+  left: 16px;
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  border-radius: var(--r-btn);
+  border: 1px solid transparent;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0 40px 0 46px;
+  transition: background var(--t), box-shadow var(--t), border-color var(--t);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.input::placeholder {
+  color: var(--text-2);
+}
+
+.input:hover {
+  background: var(--surface-2);
+}
+
+.input:focus {
+  outline: none;
+  background: var(--bg);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.md .input {
+  height: 42px;
+  font-size: var(--fs-sm);
+}
+
+.lg .input {
+  height: 48px;
+  font-size: var(--fs-base);
+}
+
+.clear {
+  position: absolute;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-pill);
+  color: var(--text-2);
+}
+
+.clear:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}

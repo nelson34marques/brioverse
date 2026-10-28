@@ -1,0 +1,65 @@
+.mobileSearch {
+  margin-bottom: var(--s-5);
+}
+
+@media (min-width: 768px) {
+  .mobileSearch {
+    display: none;
+  }
+}
+
+.hero {
+  margin-bottom: var(--s-10);
+}
+
+.chips {
+  margin-bottom: var(--s-12);
+}
+
+
+@media (min-width: 768px) {
+  .hero {
+    margin-bottom: var(--s-12);
+  }
+
+  .chips {
+    margin-bottom: var(--s-16);
+  }
+
+}
+
+/* loja sem apps publicadas */
+.empty {
+  max-width: 560px;
+  margin: var(--s-10) auto var(--s-16);
+  padding: var(--s-8) var(--s-6);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.emptyTitle {
+  font-size: var(--fs-2xl);
+  letter-spacing: -0.02em;
+}
+
+.emptyText {
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-bottom: var(--s-2);
+}
+
+@media (min-width: 768px) {
+  .empty {
+    margin-top: var(--s-16);
+  }
+
+  .emptyTitle {
+    font-size: var(--fs-3xl);
+  }
+}

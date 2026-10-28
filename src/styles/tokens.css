@@ -1,0 +1,180 @@
+/* Brioverse — design tokens (v3)
+   Referências: Google Play (web) + App Store. Uma cor de marca, superfícies neutras,
+   raios consistentes: ícones 22% (squircle), cards 16px, chips 8px, botões pílula. */
+
+:root {
+  /* marca */
+  --accent: #2a9d8f;
+  --accent-hover: #23867a;
+  --accent-soft: rgba(42, 157, 143, 0.12);
+  --accent-glow: rgba(42, 157, 143, 0.3);
+  --on-accent: #ffffff;
+
+  /* neutros (modo claro) */
+  --bg: #ffffff;
+  --surface: #f2f2f7;
+  --surface-2: #e5e5ea;
+  --surface-3: #d1d1d6;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.14);
+  --text: #1c1c1e;
+  --text-2: #6e6e73;
+  --text-3: #aeaeb2;
+
+  /* semânticas */
+  --star: #ff9f0a;
+  --success: #34c759;
+  --warning: #ff9f0a;
+  --danger: #ff3b30;
+
+  /* raios */
+  --r-xs: 6px;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 22px;
+  --r-btn: 14px;
+  --r-pill: 999px;
+  --r-icon: 22%;
+
+  /* espaçamento */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+  --s-20: 80px;
+
+  /* tipografia */
+  --font: "Jost", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 1.75rem;
+  --fs-3xl: 2.125rem;
+  --fs-4xl: 2.75rem;
+
+  /* layout */
+  --container: 1280px;
+  --header-h: 64px;
+  --bottomnav-h: 56px;
+  --gutter: 16px;
+
+  /* sombras (muito discretas, como nas lojas) */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.16);
+  --focus-ring: 0 0 0 3px var(--accent-glow);
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t: 180ms var(--ease);
+
+  /* aliases para componentes que ainda usam os nomes antigos */
+  --brand-500: var(--accent);
+  --brand-400: var(--accent-hover);
+  --brand-600: var(--accent-hover);
+  --brand-soft: var(--accent-soft);
+  --brand-glow: var(--accent-glow);
+  --brand-gradient: var(--accent);
+  --on-brand: var(--on-accent);
+  --bg-elevated: var(--surface);
+  --bg-hover: var(--surface-2);
+  --text-muted: var(--text-2);
+  --cta: var(--accent);
+  --cta-hover: var(--accent-hover);
+  --cta-soft: var(--accent-soft);
+  --on-cta: var(--on-accent);
+  --radius-sm: var(--r-sm);
+  --radius: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-full: var(--r-btn);
+  --space-1: var(--s-1);
+  --space-2: var(--s-2);
+  --space-3: var(--s-3);
+  --space-4: var(--s-4);
+  --space-5: var(--s-5);
+  --space-6: var(--s-6);
+  --space-8: var(--s-8);
+  --space-10: var(--s-10);
+  --space-12: var(--s-12);
+  --space-16: var(--s-16);
+  --space-20: var(--s-20);
+  --text-xs: var(--fs-xs);
+  --text-sm: var(--fs-sm);
+  --text-base: var(--fs-base);
+  --text-lg: var(--fs-md);
+  --text-xl: var(--fs-lg);
+  --text-2xl: var(--fs-xl);
+  --text-3xl: var(--fs-2xl);
+  --text-4xl: var(--fs-3xl);
+  --shadow: var(--shadow-sm);
+  --transition: var(--t);
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --accent: #2a9d8f;
+  --accent-hover: #34b3a3;
+  --accent-soft: rgba(42, 157, 143, 0.18);
+  --accent-glow: rgba(42, 157, 143, 0.35);
+  --on-accent: #ffffff;
+
+  --bg: #000000;
+  --surface: #0a0a0a;
+  --surface-2: #141414;
+  --surface-3: #1f1f1f;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(42, 157, 143, 0.4);
+  --text: #f7f7f8;
+  --text-2: #c9c9d1;
+  --text-3: #7e7e85;
+
+  --star: #f5b700;
+
+  --shadow-xs: 0 1px 1px rgba(0, 0, 0, 0.9);
+  --shadow-sm: 0 10px 40px -18px rgba(42, 157, 143, 0.16);
+  --shadow-md: 0 30px 60px -28px rgba(42, 157, 143, 0.22);
+  --shadow-lg: 0 60px 120px -55px rgba(42, 157, 143, 0.28);
+  --focus-ring: 0 0 0 2px rgba(42, 157, 143, 0.5);
+
+  color-scheme: dark;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 40px;
+  }
+}
+
+/* Telemóvel: escala tipográfica mais pequena (todos os textos usam estes tokens) */
+@media (max-width: 767px) {
+  :root {
+    --header-h: 56px;
+    --fs-xs: 0.6875rem; /* 11px */
+    --fs-sm: 0.75rem; /* 12px */
+    --fs-base: 0.875rem; /* 14px */
+    --fs-md: 0.9375rem; /* 15px */
+    --fs-lg: 1.0625rem; /* 17px */
+    --fs-xl: 1.25rem; /* 20px */
+    --fs-2xl: 1.375rem; /* 22px */
+    --fs-3xl: 1.625rem; /* 26px */
+    --fs-4xl: 2rem; /* 32px */
+  }
+}

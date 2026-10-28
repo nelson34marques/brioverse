@@ -1,0 +1,58 @@
+/* Chips tonais, estilo Material 3 / Play: raio 8px, altura 36px */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--r-btn);
+  border: 1px solid transparent;
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--t), color var(--t), border-color var(--t);
+}
+
+.chip:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.active,
+.active:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  flex: 0 0 auto;
+}
+
+/* variante maior para a home */
+.prominent {
+  height: 40px;
+  padding: 0 18px;
+  font-size: var(--fs-base);
+}
+
+/* com borda: para chips dentro de cartões com o mesmo fundo */
+.outline {
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--text);
+}
+
+.outline:hover {
+  background: var(--accent-soft);
+}
+
+.outline.active,
+.outline.active:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+}

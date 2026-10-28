@@ -1,0 +1,73 @@
+/*
+ * Anúncios na margem esquerda, fora do conteúdo. O conteúdo fica centrado
+ * como sempre (max 1280px). A coluna só aparece quando a margem livre à
+ * esquerda chega para um anúncio de 160px; cresce até 300px conforme o espaço.
+ *   margem livre = (100vw − 1280px) / 2 − 32px
+ */
+.rail {
+  display: none;
+  --ad-w: clamp(160px, calc((100vw - var(--container)) / 2 - 32px), 300px);
+}
+
+@media (min-width: 1664px) {
+  .rail {
+    position: fixed;
+    left: 16px;
+    top: calc(var(--header-h) + var(--s-6));
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-4);
+    width: var(--ad-w);
+  }
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.slot {
+  display: block;
+  flex: 0 0 auto;
+  width: var(--ad-w) !important;
+  height: auto !important;
+  aspect-ratio: var(--ratio);
+  overflow: hidden;
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.slot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-1);
+  border: 2px dashed var(--border-strong);
+  background: transparent;
+  color: var(--text-2);
+  text-align: center;
+  padding: var(--s-3);
+}
+
+.emptyText {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+
+.size {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}

@@ -1,0 +1,134 @@
+.section {
+  margin-bottom: var(--s-12);
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-4);
+  margin-bottom: var(--s-5);
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.more {
+  font-size: var(--fs-base);
+  font-weight: 500;
+  color: var(--accent);
+  padding-bottom: 2px;
+}
+
+.more:hover {
+  text-decoration: underline;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-2);
+  border-radius: var(--r-md);
+  color: var(--text);
+  transition: background var(--t);
+}
+
+.item + .item {
+  border-top: 1px solid var(--border);
+}
+
+.item:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.num {
+  width: 22px;
+  flex: 0 0 auto;
+  text-align: center;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.name {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.get {
+  flex: 0 0 auto;
+  height: 30px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--r-btn);
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  transition: background var(--t), color var(--t);
+}
+
+
+.skeleton {
+  height: 88px;
+  border-radius: var(--r-md);
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+}
+
+.skeleton + .skeleton {
+  margin-top: var(--s-2);
+}
+
+@media (min-width: 768px) {
+  .section {
+    margin-bottom: var(--s-16);
+  }
+
+  .title {
+    font-size: var(--fs-2xl);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

@@ -1,0 +1,43 @@
+.shot {
+  display: block;
+  height: 320px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 2px solid var(--border-strong);
+  background: var(--bg-elevated);
+  transition: border-color var(--transition);
+}
+
+.shot:hover {
+  border-color: var(--brand-500);
+}
+
+.shot img {
+  height: 100%;
+  width: auto;
+  object-fit: cover;
+}
+
+@media (min-width: 768px) {
+  .shot {
+    height: 420px;
+  }
+}
+
+/* PC: todas as capturas visíveis, sem scroll */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 5), minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.fit {
+  height: auto;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+}
+
+.fit img {
+  width: 100%;
+  height: 100%;
+}

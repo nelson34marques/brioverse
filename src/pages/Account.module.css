@@ -1,0 +1,149 @@
+.page {
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-2) 0 var(--s-4);
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--r-pill);
+  object-fit: cover;
+  background: var(--surface);
+}
+
+.avatarFallback {
+  display: grid;
+  place-items: center;
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.who {
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--fs-xl);
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card {
+  padding: var(--s-5);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.h2 {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.badges {
+  display: inline-flex;
+  gap: var(--s-1);
+}
+
+.hint strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.label {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.hint {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  max-width: 56ch;
+}
+
+.links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  margin: calc(-1 * var(--s-2)) 0;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) 0;
+  color: var(--text);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+
+.links li:last-child .link {
+  border-bottom: 0;
+}
+
+.link:hover {
+  color: var(--accent);
+}
+
+@media (min-width: 640px) {
+  .row {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s-4);
+  }
+
+  .label {
+    flex: 0 0 150px;
+  }
+}

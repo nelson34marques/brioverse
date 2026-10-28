@@ -1,0 +1,28 @@
+.end {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-10) var(--s-4) var(--s-6);
+  margin-top: var(--s-4);
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  margin-bottom: var(--s-2);
+  border-radius: var(--r-pill);
+  background: var(--accent);
+}
+
+.title {
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+
+.text {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
