@@ -143,6 +143,22 @@
     "no_install_ok": "Mesmo sem instalar, a app funciona normalmente no browser.",
     "change_device": "Não é o teu dispositivo? Alterar"
   },
+  "pwa": {
+    "title": "Instalar a Brioverse",
+    "subtitle": "{host} · abre do ecrã inicial, sem browser",
+    "install": "Instalar",
+    "install_full": "Instalar a Brioverse",
+    "later": "Agora não",
+    "installed": "A Brioverse já está instalada neste dispositivo.",
+    "account_label": "App Brioverse",
+    "guide_title": "Instalar a Brioverse",
+    "android_1": "Toca no menu ⋮ do browser, no canto superior direito.",
+    "android_2": "Escolhe \"Instalar app\" ou \"Adicionar ao ecrã inicial\".",
+    "ios_1": "No Safari, toca no botão Partilhar (quadrado com seta para cima).",
+    "ios_2": "Escolhe \"Adicionar ao ecrã principal\" e confirma.",
+    "pc_1": "No Chrome ou no Edge, clica no ícone de instalar à direita na barra de endereço.",
+    "pc_2": "Confirma em \"Instalar\". A Brioverse abre numa janela própria."
+  },
   "apk_warning": {
     "title": "Antes de baixar",
     "p1": "Este ficheiro APK é publicado pelo criador e não passa pela Google Play. O Android vai pedir permissão para instalar apps de fontes desconhecidas.",

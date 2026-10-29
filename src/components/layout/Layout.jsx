@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Header from './Header.jsx'
 import Footer from './Footer.jsx'
 import BottomNav from './BottomNav.jsx'
+import InstallBanner from './InstallBanner.jsx'
 import AdRail from './AdRail.jsx'
 import Backdrop from '../ui/Backdrop.jsx'
 import Onboarding from '../onboarding/Onboarding.jsx'
@@ -22,6 +23,7 @@ export default function Layout() {
       </div>
       <Footer />
       <BottomNav />
+      <InstallBanner />
       <Onboarding />
     </div>
   )

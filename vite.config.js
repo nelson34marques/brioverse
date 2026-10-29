@@ -11,6 +11,7 @@ export default defineConfig(({ command }) => ({
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'favicon-96x96.png', 'apple-touch-icon.png', 'logo-mark.png'],
         manifest: {
+          id: '/',
           name: 'Brioverse',
           short_name: 'Brioverse',
           description: 'A vitrine aberta de apps, PWAs e projectos independentes.',

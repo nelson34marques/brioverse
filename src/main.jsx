@@ -9,6 +9,8 @@ import { LibraryProvider } from './context/LibraryContext.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import App from './App.jsx'
 import './styles/global.css'
+// regista cedo o pedido de instalação (beforeinstallprompt) da própria loja
+import './lib/installPrompt.js'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

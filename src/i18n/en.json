@@ -143,6 +143,22 @@
     "no_install_ok": "Even without installing, the app works normally in the browser.",
     "change_device": "Not your device? Change"
   },
+  "pwa": {
+    "title": "Install Brioverse",
+    "subtitle": "{host} · opens from your home screen, no browser",
+    "install": "Install",
+    "install_full": "Install Brioverse",
+    "later": "Not now",
+    "installed": "Brioverse is already installed on this device.",
+    "account_label": "Brioverse app",
+    "guide_title": "Install Brioverse",
+    "android_1": "Tap the browser's ⋮ menu in the top-right corner.",
+    "android_2": "Choose \"Install app\" or \"Add to Home screen\".",
+    "ios_1": "In Safari, tap the Share button (square with an arrow pointing up).",
+    "ios_2": "Choose \"Add to Home Screen\" and confirm.",
+    "pc_1": "In Chrome or Edge, click the install icon on the right of the address bar.",
+    "pc_2": "Confirm with \"Install\". Brioverse opens in its own window."
+  },
   "apk_warning": {
     "title": "Before you download",
     "p1": "This APK is published by the creator and does not go through Google Play. Android will ask permission to install apps from unknown sources.",

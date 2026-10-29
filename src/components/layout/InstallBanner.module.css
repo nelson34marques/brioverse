@@ -1,0 +1,123 @@
+/* Banner "Instalar a Brioverse" — fixo acima da bottom nav em mobile, canto inferior direito em desktop */
+.banner {
+  position: fixed;
+  z-index: 49;
+  left: var(--s-3);
+  right: var(--s-3);
+  bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom) + var(--s-3));
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-md);
+  animation: slideUp 260ms var(--ease) both;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner {
+    animation: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .banner {
+    left: auto;
+    right: var(--s-6);
+    bottom: var(--s-6);
+    width: min(420px, calc(100vw - 2 * var(--s-6)));
+    padding: var(--s-4);
+  }
+}
+
+.icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-icon);
+  background: var(--surface);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cta {
+  flex: none;
+}
+
+.close {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-pill);
+  color: var(--text-2);
+  transition: background var(--t), color var(--t);
+}
+
+.close:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* guia manual (modal) */
+.steps {
+  margin: 0 0 var(--s-4);
+  padding-left: 1.25em;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  line-height: 1.5;
+}
+
+.note {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+.warn {
+  margin-bottom: var(--s-3);
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}

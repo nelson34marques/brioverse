@@ -10,6 +10,8 @@ import { usePrefs } from "../hooks/usePrefs.js";
 import VerifyEmailNotice from "../components/auth/VerifyEmailNotice.jsx";
 import { useDeveloper } from "../hooks/useDeveloper.js";
 import { useTheme } from "../hooks/useTheme.js";
+import { useInstallApp } from "../hooks/useInstallApp.js";
+import { InstallGuideModal } from "../components/layout/InstallBanner.jsx";
 import { logout } from "../lib/auth.js";
 import { SITE } from "../config/site.js";
 import styles from "./Account.module.css";
@@ -68,6 +70,7 @@ export default function Account() {
   const { developer } = useDeveloper();
   const { prefs, openOnboarding } = usePrefs();
   const { theme, setTheme } = useTheme();
+  const installApp = useInstallApp();
 
   const name = profile?.name || user?.displayName || "";
   const email = user?.email || "";
@@ -210,7 +213,26 @@ export default function Account() {
             </Chip>
           </div>
         </div>
+        {installApp.status !== "no" && (
+          <div className={styles.row}>
+            <span className={styles.label}>{t("pwa.account_label")}</span>
+            {installApp.status === "installed" ? (
+              <p className={styles.hint}>{t("pwa.installed")}</p>
+            ) : (
+              <div className={styles.chips}>
+                <Button variant="secondary" size="sm" onClick={installApp.install}>
+                  {t("pwa.install_full")}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </section>
+      <InstallGuideModal
+        open={installApp.guideOpen}
+        onClose={installApp.closeGuide}
+        device={installApp.device}
+      />
 
       <section className={styles.card}>
         <h2 className={styles.h2}>{t("account.legal")}</h2>
