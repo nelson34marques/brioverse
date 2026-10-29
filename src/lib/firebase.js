@@ -3,7 +3,7 @@
 // arrancar em modo "vitrine" mesmo sem .env.local.
 import { initializeApp, getApps } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore'
 
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -22,7 +22,11 @@ let googleProvider = null
 if (isFirebaseConfigured) {
   app = getApps().length ? getApps()[0] : initializeApp(config)
   auth = getAuth(app)
-  db = getFirestore(app)
+  // Cache local (IndexedDB): em redes lentas a loja mostra logo o que o telefone guardou
+  // da última visita e actualiza por trás. Sem IndexedDB (modo privado) cai para memória.
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+  })
   googleProvider = new GoogleAuthProvider()
 }
 

@@ -15,7 +15,7 @@ import styles from './Games.module.css'
  */
 export default function Games() {
   const { t } = useT()
-  const { apps: all, loading } = useAllApps()
+  const { apps: all, loading, error, retry } = useAllApps()
   const games = all.filter((a) => a.category === 'games')
 
   const featuredPool = games.filter((a) => a.featured)
@@ -42,7 +42,19 @@ export default function Games() {
           <h2 className={styles.h2}>{t('games.all')}</h2>
           {!loading && <span className={styles.count}>{t('category.count', { n: list.length })}</span>}
         </header>
-        {!loading && list.length === 0 && <p className={styles.empty}>{t('games.empty')}</p>}
+        {!loading && list.length === 0 && (
+          <p className={styles.empty}>
+            {error ? t('home.offline_text') : t('games.empty')}
+            {error && (
+              <>
+                {' '}
+                <button type="button" className={styles.retry} onClick={retry}>
+                  {t('home.retry')}
+                </button>
+              </>
+            )}
+          </p>
+        )}
         <ul className={styles.list}>
           {list.map((app) => (
             <li key={app.id}>

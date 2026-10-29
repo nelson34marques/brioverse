@@ -1,6 +1,6 @@
-// Acesso a dados. Lê apps aprovados do Firestore. Sem Firebase configurado, ou se a
-// leitura falhar, a loja fica vazia (não há dados de demonstração).
-import { collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore'
+// Acesso a dados. Lê apps aprovados do Firestore (cache local primeiro, depois servidor).
+// Sem Firebase configurado a loja fica vazia (não há dados de demonstração).
+import { collection, getDocs, getDocsFromCache, query, where, doc, getDoc } from 'firebase/firestore'
 import { directImageUrl } from './images.js'
 import { db, isFirebaseConfigured } from './firebase.js'
 import { comparators, rankContext } from './ranking.js'
@@ -8,6 +8,12 @@ import { comparators, rankContext } from './ranking.js'
 let cache = null
 let inflight = null
 let source = 'none' // 'firestore' | 'none'
+let failed = false // a última leitura ao servidor falhou (rede lenta/sem ligação)
+const listeners = new Set()
+
+// Redes móveis lentas demoram bem mais de 4 s na primeira ligação ao Firestore;
+// um limite curto fazia a loja aparecer vazia.
+const SERVER_TIMEOUT = 20000
 
 function withTimeout(promise, ms) {
   return new Promise((resolve, reject) => {
@@ -23,6 +29,10 @@ function withTimeout(promise, ms) {
       },
     )
   })
+}
+
+function notify() {
+  for (const fn of listeners) fn(cache)
 }
 
 function toMillis(v) {
@@ -75,31 +85,75 @@ export function dataSource() {
   return source
 }
 
-/** Carrega (uma vez) todos os apps aprovados. */
-export async function loadApps() {
-  if (cache) return cache
+/** Lista já carregada (ou null antes da primeira leitura). */
+export function cachedApps() {
+  return cache
+}
+
+/** A última leitura ao servidor falhou e não há nada guardado. */
+export function loadFailed() {
+  return failed && !cache
+}
+
+/** Avisa quando a lista muda (ex.: cache local substituída pelo servidor). */
+export function subscribeApps(fn) {
+  listeners.add(fn)
+  return () => listeners.delete(fn)
+}
+
+const approvedQuery = () => query(collection(db, 'apps'), where('status', '==', 'approved'))
+
+async function fetchFromServer() {
+  const snap = await withTimeout(getDocs(approvedQuery()), SERVER_TIMEOUT)
+  cache = snap.docs.map((d) => normalizeApp(d.id, d.data()))
+  source = 'firestore'
+  failed = false
+  notify()
+  return cache
+}
+
+/**
+ * Carrega todos os apps aprovados. Primeiro a cache local (instantâneo), depois o servidor.
+ * Uma falha não fica guardada: a próxima chamada (ou `force`) volta a tentar.
+ */
+export async function loadApps({ force = false } = {}) {
+  if (cache && !force) return cache
   if (inflight) return inflight
 
   inflight = (async () => {
-    if (isFirebaseConfigured) {
+    if (!isFirebaseConfigured) {
+      cache = []
+      source = 'none'
+      return cache
+    }
+
+    // 1) o que o telefone guardou da última visita: mostra já e actualiza por trás
+    if (!cache) {
       try {
-        // O SDK do Firestore tenta reconectar indefinidamente se a base de dados
-        // não existir ou as regras bloquearem; limitamos a espera a 4 s.
-        const snap = await withTimeout(
-          getDocs(query(collection(db, 'apps'), where('status', '==', 'approved'))),
-          4000,
-        )
-        cache = snap.docs.map((d) => normalizeApp(d.id, d.data()))
-        source = 'firestore'
-        return cache
-      } catch (err) {
-        console.warn('[brioverse] Firestore indisponível, loja vazia:', err?.message)
+        const local = await getDocsFromCache(approvedQuery())
+        if (!local.empty) {
+          cache = local.docs.map((d) => normalizeApp(d.id, d.data()))
+          source = 'firestore'
+          notify()
+          fetchFromServer().catch((err) => console.warn('[brioverse] sem actualização do servidor:', err?.message))
+          return cache
+        }
+      } catch {
+        // sem cache local (primeira visita ou sem IndexedDB)
       }
     }
-    cache = []
-    source = 'none'
-    return cache
-  })()
+
+    // 2) servidor
+    try {
+      return await fetchFromServer()
+    } catch (err) {
+      console.warn('[brioverse] Firestore indisponível:', err?.message)
+      failed = true
+      return cache ?? []
+    }
+  })().finally(() => {
+    inflight = null
+  })
 
   return inflight
 }
@@ -110,7 +164,7 @@ export async function getApp(id) {
   if (found) return found
   if (!isFirebaseConfigured) return null
   try {
-    const snap = await withTimeout(getDoc(doc(db, 'apps', id)), 4000)
+    const snap = await withTimeout(getDoc(doc(db, 'apps', id)), SERVER_TIMEOUT)
     return snap.exists() && snap.data().status === 'approved' ? normalizeApp(snap.id, snap.data()) : null
   } catch {
     return null

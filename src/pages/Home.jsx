@@ -14,7 +14,7 @@ import styles from './Home.module.css'
  */
 export default function Home() {
   const { t } = useT()
-  const { apps, loading } = useAllApps()
+  const { apps, loading, error, retry } = useAllApps()
   const { prefs, devices } = usePrefs()
 
   // Para ti: categorias escolhidas no onboarding; sem Android, esconde apps só-APK.
@@ -32,6 +32,22 @@ export default function Home() {
   const trending = selectApps(apps, { sort: 'trending', limit: 9 })
   const recent = selectApps(apps, { sort: 'recent', limit: 10 })
   const games = selectApps(apps, { category: 'games', sort: 'trending', limit: 10 })
+
+  // sem ligação e nada guardado: distingue de "ainda não há apps"
+  if (!loading && apps.length === 0 && error) {
+    return (
+      <Container>
+        <section className={styles.empty}>
+          <span className="eyebrow">{t('home.empty_eyebrow')}</span>
+          <h1 className={styles.emptyTitle}>{t('home.offline_title')}</h1>
+          <p className={styles.emptyText}>{t('home.offline_text')}</p>
+          <Button variant="cta" onClick={retry}>
+            {t('home.retry')}
+          </Button>
+        </section>
+      </Container>
+    )
+  }
 
   if (!loading && apps.length === 0) {
     return (

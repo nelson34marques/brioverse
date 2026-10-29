@@ -23,7 +23,7 @@ export default function Apps() {
     ? params.get("ordem")
     : "trending";
   // Jogos têm secção própria (/jogos): aqui ficam de fora
-  const { apps, loading } = useApps({ type, sort, excludeCategory: 'games' });
+  const { apps, loading, error, retry } = useApps({ type, sort, excludeCategory: 'games' });
 
   function set(key, value) {
     const next = new URLSearchParams(params);
@@ -76,7 +76,15 @@ export default function Apps() {
 
       {!loading && apps.length === 0 && (
         <p className={styles.empty}>
-          {t("search.no_results", { q: t("nav.apps") })}
+          {error ? t("home.offline_text") : t("search.no_results", { q: t("nav.apps") })}
+          {error && (
+            <>
+              {" "}
+              <button type="button" className={styles.retry} onClick={retry}>
+                {t("home.retry")}
+              </button>
+            </>
+          )}
         </p>
       )}
 
