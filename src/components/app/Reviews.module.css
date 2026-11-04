@@ -15,6 +15,17 @@
   font-size: var(--fs-xs);
 }
 
+/* botão "Escrever/Editar a tua avaliação": em ecrãs estreitos encolhe e quebra em vez de sair do ecrã */
+.ctaBtn {
+  max-width: 100%;
+  height: auto;
+  min-height: 42px;
+  padding-block: 10px;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.2;
+}
+
 .empty {
   padding: var(--s-5) 0;
 }
@@ -40,7 +51,7 @@
 
 .head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--s-3);
 }
 
@@ -51,6 +62,12 @@
   border-radius: var(--r-pill);
   object-fit: cover;
   background: var(--surface-2);
+}
+
+.avatarSm {
+  width: 28px;
+  height: 28px;
+  font-size: var(--fs-xs);
 }
 
 .avatarFallback {
@@ -73,16 +90,37 @@
   font-weight: 600;
   font-size: var(--fs-sm);
   display: flex;
+  flex-wrap: wrap; /* em ecrãs estreitos a etiqueta desce para a linha seguinte */
   align-items: center;
-  gap: var(--s-2);
+  gap: 2px var(--s-2);
+  min-width: 0;
 }
 
-.youTag {
-  font-size: 10px;
+.nameText {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* etiquetas "A tua avaliação" / "Desenvolvedor": pequenas, nunca sobrepõem o nome nem as acções */
+.youTag,
+.devTag {
+  flex: 0 0 auto;
+  max-width: 100%;
+  padding: 1px 7px;
+  border-radius: var(--r-pill);
+  font-size: 9px;
   font-weight: 700;
+  line-height: 1.5;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .meta {
@@ -108,8 +146,10 @@
 }
 
 .ownActions {
+  flex: 0 0 auto;
   display: flex;
   gap: var(--s-3);
+  padding-top: 2px;
 }
 
 .link {
@@ -225,6 +265,64 @@
 .slide .text {
   display: -webkit-box;
   -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* resposta do desenvolvedor (aninhada no cartão) */
+.reply {
+  margin-top: var(--s-3);
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+}
+
+.reply .text {
+  margin-top: var(--s-2);
+}
+
+.replyCta {
+  margin-top: var(--s-3);
+}
+
+.slide .reply .text {
+  -webkit-line-clamp: 4;
+}
+
+/* avaliação citada no formulário de resposta */
+.quote {
+  margin: 0 0 var(--s-5);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border-left: 3px solid var(--border-strong);
+}
+
+.quoteHead {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+
+.quoteName {
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quoteText {
+  margin-top: var(--s-2);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

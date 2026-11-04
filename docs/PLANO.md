@@ -171,12 +171,13 @@ apps/{appId}
   createdAt, updatedAt
 
 reviews/{reviewId}                  # id = `${appId}_${userId}` garante 1 por utilizador
-  appId, userId, userName, rating, comment, createdAt
+  appId, userId, userName, userPhoto, rating, text, createdAt, updatedAt
+  reply?: { text, userId, userName, userPhoto, createdAt, updatedAt }   # resposta do criador do app (1 por avaliação)
 ```
 
 Regras de segurança (resumo):
 - `apps`: leitura pública apenas se `status == approved`; escrita só pelo `developerId`; mudar `status`/`verified` só admin.
-- `reviews`: criar/editar só o próprio `userId`; `rating` entre 1 e 5.
+- `reviews`: criar/editar só o próprio `userId`; `rating` entre 1 e 5; o utilizador nunca toca em `reply`. Só o `developerId` do app (email confirmado) escreve/apaga `reply` e só esse campo.
 - `users`: leitura pública de campos de perfil; escrita só do próprio; `role` nunca editável pelo cliente após criação (admin via console).
 
 `ratingAvg` e `ratingCount` são actualizados por transacção no cliente ao criar review

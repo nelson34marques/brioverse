@@ -8,7 +8,9 @@ import {
   where,
   limit,
   setDoc,
+  updateDoc,
   deleteDoc,
+  deleteField,
   runTransaction,
   serverTimestamp,
 } from 'firebase/firestore'
@@ -28,6 +30,19 @@ function toMillis(v) {
   return new Date(v).getTime() || 0
 }
 
+/** Resposta do desenvolvedor guardada dentro da review (campo `reply`). */
+function normalizeReply(r) {
+  if (!r || typeof r !== 'object' || typeof r.text !== 'string' || !r.text) return null
+  return {
+    text: r.text,
+    userId: r.userId || '',
+    userName: r.userName || '',
+    userPhoto: r.userPhoto || '',
+    createdAt: toMillis(r.createdAt) || Date.now(),
+    updatedAt: toMillis(r.updatedAt) || toMillis(r.createdAt) || Date.now(),
+  }
+}
+
 function normalize(id, d) {
   return {
     id,
@@ -39,6 +54,7 @@ function normalize(id, d) {
     text: typeof d.text === 'string' ? d.text : '',
     createdAt: toMillis(d.createdAt) || Date.now(),
     updatedAt: toMillis(d.updatedAt) || toMillis(d.createdAt) || Date.now(),
+    reply: normalizeReply(d.reply),
   }
 }
 
@@ -113,19 +129,68 @@ export async function saveReview({ app, user, rating, text, previous }) {
   if (!isFirebaseConfigured) {
     const all = localAll()
     const now = Date.now()
-    all[id] = { ...clean, createdAt: all[id]?.createdAt ?? now, updatedAt: now }
+    all[id] = { ...clean, reply: all[id]?.reply, createdAt: all[id]?.createdAt ?? now, updatedAt: now }
     localWrite(all)
     return normalize(id, all[id])
   }
 
   const ref = doc(db, 'reviews', id)
-  await setDoc(ref, {
-    ...clean,
-    createdAt: previous ? previous.createdAt : serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  })
+  // merge: mantém a resposta do desenvolvedor (`reply`) quando a pessoa edita a avaliação
+  await setDoc(
+    ref,
+    {
+      ...clean,
+      createdAt: previous ? previous.createdAt : serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true },
+  )
   await bumpStats(app.id, previous ? previous.rating : null, clean.rating)
-  return normalize(id, { ...clean, createdAt: previous?.createdAt ?? Date.now(), updatedAt: Date.now() })
+  return normalize(id, { ...clean, reply: previous?.reply, createdAt: previous?.createdAt ?? Date.now(), updatedAt: Date.now() })
+}
+
+/**
+ * Resposta do desenvolvedor a uma avaliação (1 por avaliação, guardada no
+ * campo `reply` da própria review). Só o criador do app pode escrever
+ * (regras do Firestore). Devolve a review actualizada.
+ */
+export async function saveReply({ review, user, text }) {
+  const clean = {
+    text: String(text || '')
+      .trim()
+      .slice(0, MAX_TEXT),
+    userId: user.uid,
+    ...authorFromUser(user),
+  }
+  if (!clean.text) throw new Error('resposta vazia')
+  const createdAt = review.reply?.createdAt ?? Date.now()
+
+  if (!isFirebaseConfigured) {
+    const all = localAll()
+    if (!all[review.id]) throw new Error('review não encontrada')
+    all[review.id] = { ...all[review.id], reply: { ...clean, createdAt, updatedAt: Date.now() } }
+    localWrite(all)
+    return normalize(review.id, all[review.id])
+  }
+
+  await updateDoc(doc(db, 'reviews', review.id), {
+    reply: { ...clean, createdAt: review.reply ? createdAt : serverTimestamp(), updatedAt: serverTimestamp() },
+  })
+  return { ...review, reply: normalizeReply({ ...clean, createdAt, updatedAt: Date.now() }) }
+}
+
+/** Remove a resposta do desenvolvedor. Devolve a review actualizada. */
+export async function deleteReply({ review }) {
+  if (!isFirebaseConfigured) {
+    const all = localAll()
+    if (all[review.id]) {
+      delete all[review.id].reply
+      localWrite(all)
+    }
+    return { ...review, reply: null }
+  }
+  await updateDoc(doc(db, 'reviews', review.id), { reply: deleteField() })
+  return { ...review, reply: null }
 }
 
 export async function deleteReview({ app, user, previous }) {

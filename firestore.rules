@@ -195,18 +195,53 @@ service cloud.firestore {
     }
 
     // reviews/{appId_userId}
+    // Campo opcional `reply`: resposta do desenvolvedor do app (1 por avaliação).
+    function validReview(d) {
+      return d.userId == request.auth.uid
+        && d.rating is int
+        && d.rating >= 1
+        && d.rating <= 5
+        && d.text is string
+        && d.text.size() <= 1000
+        && d.userName is string
+        && d.userName.size() <= 80;
+    }
+
+    // quem escreve é o criador do app a que a avaliação pertence
+    function isAppDeveloper(appId) {
+      return verified()
+        && get(/databases/$(database)/documents/apps/$(appId)).data.developerId == request.auth.uid;
+    }
+
+    function validReply(r) {
+      return r.userId == request.auth.uid
+        && r.text is string
+        && r.text.size() >= 1
+        && r.text.size() <= 1000
+        && r.userName is string
+        && r.userName.size() <= 80;
+    }
+
     match /reviews/{reviewId} {
       allow read: if true;
-      allow create, update: if verified()
-        && request.resource.data.userId == request.auth.uid
+
+      // a pessoa cria a sua avaliação (sem resposta)
+      allow create: if verified()
         && reviewId == request.resource.data.appId + '_' + request.auth.uid
-        && request.resource.data.rating is int
-        && request.resource.data.rating >= 1
-        && request.resource.data.rating <= 5
-        && request.resource.data.text is string
-        && request.resource.data.text.size() <= 1000
-        && request.resource.data.userName is string
-        && request.resource.data.userName.size() <= 80;
+        && validReview(request.resource.data)
+        && !('reply' in request.resource.data);
+
+      // a pessoa edita a sua avaliação sem mexer na resposta do desenvolvedor;
+      // o desenvolvedor do app só mexe em `reply` (escreve ou apaga a resposta)
+      allow update: if (verified()
+          && reviewId == request.resource.data.appId + '_' + request.auth.uid
+          && validReview(request.resource.data)
+          && request.resource.data.appId == resource.data.appId
+          && request.resource.data.get('reply', null) == resource.data.get('reply', null))
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reply'])
+          && isAppDeveloper(resource.data.appId)
+          && (!('reply' in request.resource.data) || validReply(request.resource.data.reply)));
+
       allow delete: if signedIn()
         && (resource.data.userId == request.auth.uid || isAdmin());
     }
