@@ -10,7 +10,7 @@ import { selectApps } from '../lib/db.js'
 import styles from './Home.module.css'
 
 /**
- * Início: montra. Só destaques + 4 secções. Filtros e categorias vivem em /apps.
+ * Início: montra. Só destaques + 3 secções (mais "Para ti" com gostos definidos). Filtros e categorias vivem em /apps.
  */
 export default function Home() {
   const { t } = useT()
@@ -30,7 +30,6 @@ export default function Home() {
     : selectApps(apps, { sort: 'rating', limit: 5 })
   const topRated = selectApps(apps, { sort: 'rating', limit: 10 })
   const trending = selectApps(apps, { sort: 'trending', limit: 9 })
-  const recent = selectApps(apps, { sort: 'recent', limit: 10 })
   const games = selectApps(apps, { category: 'games', sort: 'trending', limit: 10 })
 
   // sem ligação e nada guardado: distingue de "ainda não há apps"
@@ -73,7 +72,6 @@ export default function Home() {
       {forYou.length > 0 && <AppRow eyebrow={t('home.for_you_eyebrow')} title={t('home.for_you')} to="/apps" apps={forYou} loading={loading} />}
       <AppRow eyebrow={t('home.recommended_eyebrow')} title={t('home.recommended')} to="/apps?ordem=rating" apps={topRated} loading={loading} />
       <StackedRow eyebrow={t('home.top_eyebrow')} title={t('home.trending')} to="/apps?ordem=trending" apps={trending} loading={loading} />
-      <AppRow eyebrow={t('home.recent_eyebrow')} title={t('home.recent')} to="/apps?ordem=recent" apps={recent} loading={loading} />
       <AppRow eyebrow={t('home.games_eyebrow')} title={t('home.games')} to="/jogos" apps={games} loading={loading} />
 
     </Container>
