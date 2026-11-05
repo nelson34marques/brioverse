@@ -5,11 +5,13 @@ import Button from '../../components/ui/Button.jsx'
 import Chip from '../../components/ui/Chip.jsx'
 import { Field, Input, Textarea, Notice } from '../../components/ui/Field.jsx'
 import VerifyEmailNotice from '../../components/auth/VerifyEmailNotice.jsx'
+import IconInput from '../../components/dev/IconInput.jsx'
 import { useT } from '../../hooks/useT.js'
 import { useAuth } from '../../hooks/useAuth.js'
 import { useDev } from '../../hooks/useDev.js'
 import { saveApplication, validateApplication, LIMITS } from '../../lib/developers.js'
 import { isFirebaseConfigured } from '../../lib/firebase.js'
+import { UPLOAD } from '../../lib/upload.js'
 import styles from './Dev.module.css'
 import form from '../../components/ui/Form.module.css'
 
@@ -23,6 +25,7 @@ const EMPTY = {
   repo: '',
   sampleUrl: '',
   contactEmail: '',
+  photoUrl: '',
   accept: false,
 }
 
@@ -48,6 +51,7 @@ export default function Apply() {
   const [busy, setBusy] = useState(false)
   const [fail, setFail] = useState('')
   const [done, setDone] = useState('') // 'sent' | 'saved'
+  const [photoBusy, setPhotoBusy] = useState(false) // foto a ser enviada
 
   useEffect(() => {
     if (loading || f) return
@@ -57,8 +61,8 @@ export default function Apply() {
       contactEmail: user?.email || '',
     }
     if (developer) {
-      const { kind, name, legalName, registration, description, website, repo, sampleUrl, contactEmail } = developer
-      Object.assign(base, { kind, name, legalName, registration, description, website, repo, sampleUrl, contactEmail, accept: true })
+      const { kind, name, legalName, registration, description, website, repo, sampleUrl, contactEmail, photoUrl } = developer
+      Object.assign(base, { kind, name, legalName, registration, description, website, repo, sampleUrl, contactEmail, photoUrl, accept: true })
     }
     setF(base)
   }, [loading, developer, f, profile, user])
@@ -177,6 +181,19 @@ export default function Apply() {
           />
         </Field>
 
+        <Field label={t('dev.photo')} htmlFor="dev-photo" help={t('dev.photo_help', { mb: UPLOAD.maxMb })}>
+          <IconInput
+            id="dev-photo"
+            shape="circle"
+            value={f.photoUrl}
+            onChange={set('photoUrl')}
+            onBusyChange={setPhotoBusy}
+            addLabel={t('dev.photo_add')}
+            changeLabel={t('dev.photo_change')}
+            removeLabel={t('dev.photo_remove')}
+          />
+        </Field>
+
         {company && (
           <>
             <Field label={t('dev.legal_name')} htmlFor="dev-legal" error={err('legalName')}>
@@ -260,7 +277,7 @@ export default function Apply() {
           <Button variant="ghost" to={back}>
             {t('common.cancel')}
           </Button>
-          <Button variant="cta" type="submit" disabled={busy || !emailVerified}>
+          <Button variant="cta" type="submit" disabled={busy || photoBusy || !emailVerified}>
             {busy ? t('dev.sending') : t(submitKey)}
           </Button>
         </div>

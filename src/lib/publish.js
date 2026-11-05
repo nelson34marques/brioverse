@@ -23,7 +23,7 @@ export const EMPTY_APP = {
   webUrl: '',
   desktopUrl: '',
   iconUrl: '',
-  screenshots: ['', '', '', '', ''],
+  screenshots: [], // links: enviados para o Cloudinary no formulário (apps antigos têm links colados à mão)
   version: '1.0.0',
   changelog: '',
   confirm: false,
@@ -57,7 +57,7 @@ export function validateApp(f, { editing = false } = {}) {
     if (f.apkSizeMb !== '' && !(Number(f.apkSizeMb) > 0)) e.apkSizeMb = 'dev.err_number'
   } else if (!isUrl(f.appUrl)) e.appUrl = 'dev.err_url'
   if (f.desktopUrl.trim() && !isUrl(f.desktopUrl)) e.desktopUrl = 'dev.err_url'
-  if (!isUrl(f.iconUrl)) e.iconUrl = 'dev.err_url'
+  if (!isUrl(f.iconUrl)) e.iconUrl = 'dev.err_icon'
   const shots = f.screenshots.map((s) => s.trim())
   shots.forEach((s, i) => {
     if (s && !isUrl(s)) e[`shot${i}`] = 'dev.err_url'
@@ -71,8 +71,7 @@ export function validateApp(f, { editing = false } = {}) {
 
 /** Form a partir de um app guardado (para a tela Actualizar). */
 export function formFromApp(app) {
-  const shots = [...(app.screenshots || [])].slice(0, APP_LIMITS.shots)
-  while (shots.length < APP_LIMITS.shots) shots.push('')
+  const shots = (app.screenshots || []).filter(Boolean).slice(0, APP_LIMITS.shots)
   return {
     ...EMPTY_APP,
     title: app.title || '',

@@ -79,7 +79,9 @@ service cloud.firestore {
         && (d.repo == '' || isUrl(d.repo))
         && d.contactEmail is string && d.contactEmail.size() <= 120
         && d.legalName is string && d.legalName.size() <= 80
-        && d.registration is string && d.registration.size() <= 80;
+        && d.registration is string && d.registration.size() <= 80
+        // foto de perfil / logótipo (opcional)
+        && (!('photoUrl' in d) || d.photoUrl == '' || isHttps(d.photoUrl));
     }
 
     // users/{uid} — tem nome e email: só o próprio e o admin lêem
@@ -122,6 +124,29 @@ service cloud.firestore {
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['uid', 'note', 'reviewedAt', 'reviewedBy']));
 
       allow delete: if isAdmin();
+    }
+
+    // creators/{uid} — perfil PÚBLICO do criador (nome, foto, descrição, contacto de suporte, site),
+    // mostrado em /criador/{uid}. É uma cópia dos campos públicos de developers/{uid}.
+    function validCreator(d) {
+      return d.keys().hasOnly(['name', 'kind', 'description', 'contactEmail', 'website', 'photoUrl', 'updatedAt'])
+        && d.name is string && d.name.size() >= 2 && d.name.size() <= 80
+        && d.kind in ['individual', 'company']
+        && d.description is string && d.description.size() <= 1000
+        && d.contactEmail is string && d.contactEmail.size() <= 120
+        && d.website is string && d.website.size() <= 300
+        && (!('photoUrl' in d) || d.photoUrl == '' || isHttps(d.photoUrl));
+    }
+
+    match /creators/{uid} {
+      allow read: if true;
+      // o próprio criador (conta aprovada = role developer) ou o admin
+      allow create, update: if isAdmin()
+        || (isOwner(uid)
+          && verified()
+          && role() == 'developer'
+          && validCreator(request.resource.data));
+      allow delete: if isAdmin() || isOwner(uid);
     }
 
     // notifications/{id} — avisos do admin para um utilizador (app desactivado, candidatura, etc.)

@@ -1,0 +1,151 @@
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  margin-bottom: var(--s-6);
+}
+
+.avatar {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.headText {
+  min-width: 0;
+}
+
+.name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-2xl);
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+}
+
+.verified {
+  display: inline-flex;
+  color: var(--accent);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-3);
+  margin-top: var(--s-1);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.meta span + span::before {
+  content: "·";
+  margin-right: var(--s-3);
+}
+
+.info {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-6);
+  margin-bottom: var(--s-8);
+}
+
+.block {
+  min-width: 0;
+}
+
+.h2 {
+  font-size: var(--fs-lg);
+  margin-bottom: var(--s-3);
+}
+
+.desc {
+  white-space: pre-line;
+  line-height: 1.6;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.contacts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.contact {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  transition:
+    border-color var(--t),
+    background var(--t);
+}
+
+.contact:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.contact svg {
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+
+.contact > span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.contactLabel {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+
+.contactValue {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 900px) {
+  .avatar {
+    width: 88px;
+    height: 88px;
+    font-size: var(--fs-3xl);
+  }
+
+  .name {
+    font-size: var(--fs-3xl);
+  }
+
+  /* descrição à esquerda, contactos à direita */
+  .info {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: var(--s-8);
+  }
+
+  .info > .block:only-child {
+    grid-column: 1 / -1;
+    max-width: 520px;
+  }
+}

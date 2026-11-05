@@ -105,6 +105,11 @@ export default function AppDetail() {
     }
   }
 
+  // página pública do criador; apps muito antigos sem developerId caem na pesquisa pelo nome
+  const creatorTo = app.developerId
+    ? `/criador/${app.developerId}`
+    : `/pesquisa?q=${encodeURIComponent(app.developerName || "")}`;
+
   return (
     <Container className={styles.page}>
       <header className={styles.head}>
@@ -112,11 +117,7 @@ export default function AppDetail() {
         <div className={styles.headText}>
           <h1 className={styles.title}>{app.title}</h1>
           <p className={styles.dev}>
-            <Link
-              to={`/pesquisa?q=${encodeURIComponent(app.developerName || "")}`}
-            >
-              {app.developerName}
-            </Link>
+            <Link to={creatorTo}>{app.developerName}</Link>
             {app.verified && (
               <span
                 className={styles.verified}
@@ -265,7 +266,9 @@ export default function AppDetail() {
           )}
           <div>
             <dt>{t("app_detail.developer")}</dt>
-            <dd>{app.developerName}</dd>
+            <dd>
+              <Link to={creatorTo}>{app.developerName}</Link>
+            </dd>
           </div>
         </dl>
       </section>
@@ -278,6 +281,7 @@ export default function AppDetail() {
         {moreFromDev.length > 0 && (
         <AppRow
           title={t("app_detail.more_from", { dev: app.developerName })}
+          to={creatorTo}
           apps={moreFromDev}
         />
       )}

@@ -1,5 +1,8 @@
 .shot {
   display: block;
+  flex: 0 0 auto;
+  padding: 0;
+  cursor: zoom-in;
   height: 320px;
   border-radius: var(--radius);
   overflow: hidden;

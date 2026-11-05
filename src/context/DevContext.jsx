@@ -4,6 +4,7 @@ import { DevContext } from './contexts.js'
 import { useAuth } from '../hooks/useAuth.js'
 import { useDeveloper } from '../hooks/useDeveloper.js'
 import { listMyApps, listNotifications, markNotificationRead } from '../lib/developers.js'
+import { syncCreator } from '../lib/creators.js'
 
 /**
  * Dados do modo desenvolvedor, partilhados por todas as telas /dev/*:
@@ -39,6 +40,12 @@ export function DevProvider({ children }) {
     reloadApps()
     reloadNotifications()
   }, [reloadApps, reloadNotifications])
+
+  // perfil público (/criador/:uid) igual aos dados da conta, incluindo depois de os editar
+  useEffect(() => {
+    if (developer?.status !== 'approved') return
+    syncCreator(developer).catch((err) => console.warn('[brioverse] perfil público por actualizar:', err?.code || err?.message))
+  }, [developer])
 
   const markRead = useCallback(async (id) => {
     setNotifications((l) => l.map((n) => (n.id === id ? { ...n, read: true } : n)))

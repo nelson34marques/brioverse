@@ -7,6 +7,7 @@ import Search from './pages/Search.jsx'
 import Category from './pages/Category.jsx'
 import Games from './pages/Games.jsx'
 import AppDetail from './pages/AppDetail.jsx'
+import Creator from './pages/Creator.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Account from './pages/Account.jsx'
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="categoria/:slug" element={<Category />} />
         <Route path="pesquisa" element={<Search />} />
         <Route path="app/:appId" element={<AppDetail />} />
+        <Route path="criador/:uid" element={<Creator />} />
         <Route path="entrar" element={<Login />} />
         <Route path="registar" element={<Register />} />
         <Route path="termos" element={<Legal kind="terms" />} />

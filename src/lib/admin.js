@@ -5,6 +5,7 @@ import { db, isFirebaseConfigured } from './firebase.js'
 import { localApps } from './publish.js'
 import { normalizeApp } from './db.js'
 import { normalizeDeveloper, localDeveloper, updateLocalDeveloper, pushNotification } from './developers.js'
+import { creatorData, syncCreators } from './creators.js'
 
 export const MAX_BOOST = 3
 
@@ -20,7 +21,10 @@ export async function listDevelopers() {
     return d ? [d] : []
   }
   const snap = await getDocs(collection(db, 'developers'))
-  return snap.docs.map((d) => normalizeDeveloper(d.id, d.data()))
+  const devs = snap.docs.map((d) => normalizeDeveloper(d.id, d.data()))
+  // perfis públicos (creators/{uid}) em dia com as contas; não bloqueia o painel
+  syncCreators(devs).catch((err) => console.warn('[brioverse] perfis públicos por sincronizar:', err?.code || err?.message))
+  return devs
 }
 
 function addNotification(batch, n) {
@@ -91,13 +95,21 @@ function patchDev(batch, dev, patch) {
   batch.update(doc(db, 'developers', dev.uid), { ...patch, reviewedAt: serverTimestamp() })
 }
 
+/** Perfil público (creators/{uid}): existe enquanto a conta está aprovada. */
+function publishCreator(batch, dev) {
+  batch.set(doc(db, 'creators', dev.uid), { ...creatorData(dev), updatedAt: serverTimestamp() })
+}
+
 /** Aprova ou recusa uma candidatura. Aprovar dá o role 'developer'. */
 export async function reviewApplication(dev, decision, note, by) {
   const approved = decision === 'approved'
   const n = { uid: dev.uid, type: approved ? 'dev_approved' : 'dev_rejected', reason: note, by }
   await commit((b) => {
     patchDev(b, dev, { status: decision, note, reviewedBy: by })
-    if (approved) b.update(doc(db, 'users', dev.uid), { role: 'developer' })
+    if (approved) {
+      b.update(doc(db, 'users', dev.uid), { role: 'developer' })
+      publishCreator(b, dev)
+    }
   }, n)
   if (!isFirebaseConfigured) updateLocalDeveloper({ status: decision, note, reviewedAt: Date.now() })
   return { ...dev, status: decision, note, reviewedAt: Date.now() }
@@ -108,6 +120,7 @@ export async function revokeDeveloper(dev, note, by) {
   await commit((b) => {
     patchDev(b, dev, { status: 'revoked', note, reviewedBy: by })
     b.update(doc(db, 'users', dev.uid), { role: 'consumer' })
+    b.delete(doc(db, 'creators', dev.uid))
   }, n)
   if (!isFirebaseConfigured) updateLocalDeveloper({ status: 'revoked', note, reviewedAt: Date.now() })
   return { ...dev, status: 'revoked', note, reviewedAt: Date.now() }
@@ -118,6 +131,7 @@ export async function restoreDeveloper(dev, by) {
   await commit((b) => {
     patchDev(b, dev, { status: 'approved', note: '', reviewedBy: by })
     b.update(doc(db, 'users', dev.uid), { role: 'developer' })
+    publishCreator(b, dev)
   }, n)
   if (!isFirebaseConfigured) updateLocalDeveloper({ status: 'approved', note: '', reviewedAt: Date.now() })
   return { ...dev, status: 'approved', note: '', reviewedAt: Date.now() }

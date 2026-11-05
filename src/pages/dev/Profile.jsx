@@ -45,6 +45,7 @@ export default function DevProfile() {
   return (
     <Container className={styles.page}>
       <header className={styles.header}>
+        {developer?.photoUrl && <img className={styles.profilePhoto} src={developer.photoUrl} alt="" referrerPolicy="no-referrer" />}
         <span className="eyebrow">{t('dev.eyebrow')}</span>
         <h1 className={styles.title}>{name}</h1>
         {developer && (

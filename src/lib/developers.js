@@ -49,6 +49,7 @@ export function normalizeDeveloper(uid, d = {}) {
     repo: d.repo || '',
     sampleUrl: d.sampleUrl || '',
     contactEmail: d.contactEmail || '',
+    photoUrl: typeof d.photoUrl === 'string' ? d.photoUrl : '',
     userName: d.userName || '',
     userEmail: d.userEmail || '',
     status: DEV_STATUS.includes(d.status) ? d.status : 'pending',
@@ -135,6 +136,7 @@ export async function saveApplication(user, form, existing = null) {
     repo: (form.repo || '').trim().slice(0, LIMITS.url),
     sampleUrl: form.sampleUrl.trim().slice(0, LIMITS.url),
     contactEmail: form.contactEmail.trim().slice(0, LIMITS.email),
+    photoUrl: /^https:\/\//.test(form.photoUrl || '') ? form.photoUrl.slice(0, 400) : '', // foto/logótipo (opcional), enviada no formulário
     userName: user.displayName || '',
     userEmail: user.email || '',
   }

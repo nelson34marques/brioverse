@@ -1,13 +1,16 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import Button from '../ui/Button.jsx'
 import Chip from '../ui/Chip.jsx'
 import { Field, Input, Textarea, Notice } from '../ui/Field.jsx'
+import IconInput from './IconInput.jsx'
+import ScreenshotsInput from './ScreenshotsInput.jsx'
 import { useT } from '../../hooks/useT.js'
 import { CATEGORIES } from '../../utils/categories.js'
 import { APP_LIMITS, validateApp } from '../../lib/publish.js'
 import { directImageUrl, checkImage } from '../../lib/images.js'
+import { UPLOAD } from '../../lib/upload.js'
 import styles from '../../pages/dev/Dev.module.css'
 import form from '../ui/Form.module.css'
 
@@ -16,6 +19,7 @@ const isUrl = (s) => /^https:\/\/[^\s/]+\.[^\s]+$/i.test((s || '').trim())
 /**
  * Formulário do app, usado em Publicar (mode="create") e Actualizar (mode="edit").
  * Blocos: básico, ligações, imagens, versão e confirmação. `onSubmit(form)` grava e pode lançar.
+ * O ícone e as capturas de ecrã são enviados do dispositivo (Cloudinary) e ficam guardados como links.
  */
 export default function AppForm({ initial, mode, current = null, cancelTo, onSubmit }) {
   const { t } = useT()
@@ -24,50 +28,40 @@ export default function AppForm({ initial, mode, current = null, cancelTo, onSub
   const [errors, setErrors] = useState({})
   const [busy, setBusy] = useState(false)
   const [fail, setFail] = useState('')
-  const [broken, setBroken] = useState({}) // campo → true quando o <img> não carregou
+  const [iconBusy, setIconBusy] = useState(false) // ícone a ser enviado
+  const [shotsBusy, setShotsBusy] = useState(false) // capturas a ser enviadas
+  const uploading = iconBusy || shotsBusy
 
   const set = (key) => (e) => {
     const v = e?.target ? (e.target.type === 'checkbox' ? e.target.checked : e.target.value) : e
     setF((p) => ({ ...p, [key]: v }))
     setErrors((p) => (p[key] ? { ...p, [key]: undefined } : p))
-    setBroken((p) => (p[key] ? { ...p, [key]: false } : p))
   }
-  const setShot = (i) => (e) => {
-    const v = e.target.value
-    setF((p) => {
-      const screenshots = [...p.screenshots]
-      screenshots[i] = v
-      return { ...p, screenshots }
-    })
-    setErrors((p) => ({ ...p, [`shot${i}`]: undefined, screenshots: undefined }))
-    setBroken((p) => ({ ...p, [`shot${i}`]: false }))
-  }
-  const markBroken = (key) => () => setBroken((p) => ({ ...p, [key]: true }))
-  /** Pré-visualização de um link de imagem; marca o campo quando o browser não o carrega. */
-  const preview = (url, field, cls) => {
-    const src = directImageUrl(url)
-    if (!isUrl(src) || broken[field]) return <span className={`${cls} ${styles.iconEmpty} ${broken[field] ? styles.previewBroken : ''}`} aria-hidden="true" />
-    return <img className={cls} src={src} alt="" referrerPolicy="no-referrer" onError={markBroken(field)} />
-  }
-  const err = (k) => (errors[k] ? t(errors[k], { n: APP_LIMITS.shotsMin }) : broken[k] ? t('dev.err_image') : '')
+  /** Capturas: recebe (lista) => novaLista, porque os envios terminam de forma assíncrona. */
+  const setShots = useCallback((update) => {
+    setF((p) => ({ ...p, screenshots: update(p.screenshots) }))
+    setErrors((p) => Object.fromEntries(Object.entries(p).filter(([k]) => !/^shot\d+$/.test(k) && k !== 'screenshots')))
+  }, [])
+  const err = (k) => (errors[k] ? t(errors[k], { n: APP_LIMITS.shotsMin }) : '')
+  const badShots = f.screenshots.map((_, i) => i).filter((i) => errors[`shot${i}`])
 
   async function submit(e) {
     e.preventDefault()
     const errs = validateApp(f, { editing })
     if (!Object.keys(errs).length) {
-      // Confirma que os links são mesmo imagens (um link de partilha abre no browser mas não serve num <img>).
+      // Confirma que o ícone e as capturas carregam mesmo como imagem (um link de partilha abre no browser mas não serve num <img>).
       setBusy(true)
       const shots = f.screenshots.map(directImageUrl)
       const [iconOk, ...shotsOk] = await Promise.all([checkImage(directImageUrl(f.iconUrl)), ...shots.map((u) => (isUrl(u) ? checkImage(u) : Promise.resolve(true)))])
-      if (!iconOk) errs.iconUrl = 'dev.err_image'
+      if (!iconOk) errs.iconUrl = 'dev.err_icon_broken'
       shotsOk.forEach((ok, i) => {
-        if (!ok) errs[`shot${i}`] = 'dev.err_image'
+        if (!ok) errs[`shot${i}`] = 'dev.err_shot_broken'
       })
       setBusy(false)
     }
     setErrors(errs)
     if (Object.keys(errs).length) {
-      document.querySelector(`.${form.invalid}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      requestAnimationFrame(() => document.querySelector(`.${form.invalid}, [aria-invalid="true"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }))
       return
     }
     setBusy(true)
@@ -166,25 +160,17 @@ export default function AppForm({ initial, mode, current = null, cancelTo, onSub
         <h2 className={styles.h2}>{t('dev.sec_media')}</h2>
         <p className={styles.hint}>{t('dev.media_hint')}</p>
 
-        <Field label={t('dev.f_icon')} htmlFor="app-icon" help={t('dev.f_icon_help')} error={err('iconUrl')}>
-          <div className={styles.iconRow}>
-            {preview(f.iconUrl, 'iconUrl', styles.iconPreview)}
-            <Input id="app-icon" type="url" inputMode="url" value={f.iconUrl} onChange={set('iconUrl')} placeholder="https://…/icon-512.png" invalid={Boolean(errors.iconUrl || broken.iconUrl)} />
-          </div>
+        <Field label={t('dev.f_icon')} htmlFor="app-icon" help={t('dev.f_icon_help', { mb: UPLOAD.maxMb })} error={err('iconUrl')}>
+          <IconInput id="app-icon" value={f.iconUrl} onChange={set('iconUrl')} invalid={Boolean(errors.iconUrl)} onBusyChange={setIconBusy} />
         </Field>
 
-        <Field label={t('dev.f_shots')} help={t('dev.f_shots_help', { n: APP_LIMITS.shotsMin, max: APP_LIMITS.shots })} error={err('screenshots')}>
-          <div className={styles.shots}>
-            {f.screenshots.map((s, i) => (
-              <div key={i} className={styles.shotRow}>
-                {preview(s, `shot${i}`, styles.shotPreview)}
-                <div className={form.field}>
-                  <Input type="url" inputMode="url" value={s} onChange={setShot(i)} placeholder={`${t('dev.f_shot_n', { n: i + 1 })} · https://`} aria-label={t('dev.f_shot_n', { n: i + 1 })} invalid={Boolean(errors[`shot${i}`] || broken[`shot${i}`])} />
-                  {err(`shot${i}`) && <p className={form.error}>{err(`shot${i}`)}</p>}
-                </div>
-              </div>
-            ))}
-          </div>
+        <Field
+          label={t('dev.f_shots')}
+          htmlFor="app-shots"
+          help={t('dev.f_shots_help', { n: APP_LIMITS.shotsMin, max: APP_LIMITS.shots, mb: UPLOAD.maxMb })}
+          error={err('screenshots') || (badShots.length ? t('dev.err_shot_broken') : '')}
+        >
+          <ScreenshotsInput id="app-shots" value={f.screenshots} onChange={setShots} max={APP_LIMITS.shots} invalid={badShots} error={Boolean(errors.screenshots)} onBusyChange={setShotsBusy} />
         </Field>
       </section>
 
@@ -218,7 +204,7 @@ export default function AppForm({ initial, mode, current = null, cancelTo, onSub
           <Button variant="ghost" to={cancelTo}>
             {t('common.cancel')}
           </Button>
-          <Button variant="cta" type="submit" disabled={busy}>
+          <Button variant="cta" type="submit" disabled={busy || uploading}>
             {busy ? t('dev.sending') : t(editing ? 'dev.edit_submit' : 'dev.publish_submit')}
           </Button>
         </div>

@@ -1,4 +1,5 @@
-// Links de imagens: sem upload, os criadores colam links. Muitos colam a página de partilha
+// Links de imagens: apps antigos têm o ícone e as capturas como links colados pelo criador;
+// os novos enviam as imagens para o Cloudinary (ver upload.js). Muitos colavam a página de partilha
 // (Google Drive, Dropbox, GitHub, Imgur), que abre no browser mas não serve num <img>.
 // directImageUrl converte os casos conhecidos para o link directo do ficheiro.
 

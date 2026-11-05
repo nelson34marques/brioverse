@@ -32,7 +32,7 @@ upload de ficheiros (nenhum ficheiro passa pelos nossos servidores).
 | Auth (cliente) | Firebase Authentication: **Google** + email/senha | Campo `role` guardado no Firestore, não no Auth. |
 | Auth (criador) | **A definir mais tarde.** | MVP arranca só com o lado do cliente. |
 | Base de dados | Cloud Firestore | Coleções: `users`, `apps`, `reviews`. |
-| Ficheiros | **Nenhum.** Ícones, screenshots e APKs são URLs externos | GitHub Releases, GitHub raw, Imgur, Cloudinary free, etc. |
+| Ficheiros | **Sem Firebase Storage.** APKs são URLs externos; o ícone e as capturas de ecrã são enviados para o **Cloudinary** (plano gratuito, preset sem assinatura) e guardadas como URL | GitHub Releases, GitHub raw, etc. Cloud e preset em `src/lib/upload.js`. Apps antigos mantêm os links colados à mão. |
 | Hosting | Firebase Hosting | SSL grátis, suporta SPA rewrite. |
 | PWA | `vite-plugin-pwa` | Manifest + service worker para instalação. |
 | i18n | Dicionários JSON próprios (`pt.json`, `en.json`) + hook `useT()` | Sem biblioteca. Idioma guardado em `localStorage`. |
@@ -134,7 +134,7 @@ além das definidas em `global.css`. Todas as cores e espaçamentos vêm de vari
 - **Dashboard:** tabela dos seus apps com status (pendente / aprovado / rejeitado) e métricas: views, cliques em abrir/baixar.
 - **Assistente de submissão (4 passos):**
   1. Básico: título, slogan, descrição, categoria, palavras-chave.
-  2. Multimédia: **URL** do ícone (quadrado) + 3 a 5 **URLs** de screenshots, com pré-visualização ao colar. Nada é carregado para os nossos servidores.
+  2. Multimédia: ícone (quadrado) + 2 a 5 screenshots **enviados do dispositivo** para o Cloudinary (upload directo do browser), com pré-visualização grande. Nada é carregado para os nossos servidores.
   3. Tipo e link: PWA/Site ou APK Android.
      - PWA: URL do site.
      - APK: **link directo para o ficheiro do build** (ex.: GitHub Releases `.apk`), tamanho em MB e versão. O botão "Baixar" abre esse link.
@@ -255,7 +255,7 @@ Regras de uso:
 | Nome | **Brioverse** |
 | Domínio | Por decidir. Não bloqueia o desenvolvimento. |
 | Idiomas | PT (padrão) + EN desde o início. |
-| Ficheiros | **Sem Firebase Storage.** Ícones, screenshots e APKs por URL externo. Só Auth + Firestore + Hosting. |
+| Ficheiros | **Sem Firebase Storage.** APKs por URL externo; ícone e capturas de ecrã enviados para o Cloudinary (guardados como URL). Só Auth + Firestore + Hosting. |
 | APKs | Link directo para o ficheiro do build (ex.: GitHub Releases). |
 | Auth cliente | Google + email/senha. |
 | Auth criador | Adiada. MVP arranca só com o lado do cliente. |
