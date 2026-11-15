@@ -116,9 +116,10 @@ const PT_PRIVACY = {
           'Preferências: dispositivos que usas (Android, iPhone/iPad, computador) e categorias de interesse, escolhidos por ti no primeiro acesso. Guardadas no teu browser e, se tiveres conta, na tua ficha de utilizador.',
           'Avaliações: a nota, o comentário, o teu nome e fotografia de perfil, e a data. São públicos e aparecem na página da aplicação.',
           'Contadores de utilização: número de visualizações e de cliques em "Abrir" ou "Baixar" por aplicação. São agregados e não te identificam.',
+          'País aproximado, derivado da língua e do fuso horário do browser, guardado apenas como contador agregado por aplicação (ex.: "12 views de Portugal"). Não guardamos o endereço IP nem a localização exacta.',
           'Dados técnicos: o tipo de dispositivo e de browser, detectados localmente para te mostrar o guia de instalação certo. Não são enviados para os nossos servidores.',
         ],
-        'Não recolhemos localização, contactos, ficheiros do dispositivo nem dados de pagamento.',
+        'Não recolhemos localização exacta, contactos, ficheiros do dispositivo nem dados de pagamento.',
       ],
     },
     {
@@ -162,7 +163,7 @@ const PT_PRIVACY = {
       title: 'Durante quanto tempo guardamos',
       paragraphs: [
         'Os dados da conta e as avaliações são guardados enquanto a conta existir. Ao eliminar uma avaliação ela é removida de imediato. Ao pedir a eliminação da conta, apagamos a ficha de utilizador e as avaliações associadas num prazo máximo de 30 dias, salvo obrigação legal de conservação.',
-        'Os contadores agregados de visualizações e cliques não contêm dados pessoais e são conservados sem prazo.',
+        'Os contadores agregados de visualizações, cliques e país não contêm dados pessoais e são conservados sem prazo.',
       ],
     },
     {
@@ -312,9 +313,10 @@ const EN_PRIVACY = {
           'Preferences: the devices you use (Android, iPhone/iPad, computer) and categories of interest, chosen by you on first access. Stored in your browser and, if you have an account, in your user record.',
           'Reviews: the rating, the comment, your name and profile photo, and the date. They are public and appear on the app page.',
           'Usage counters: number of views and of clicks on "Open" or "Download" per app. They are aggregated and do not identify you.',
+          'Approximate country, derived from the browser language and time zone, stored only as an aggregated counter per app (e.g. "12 views from Portugal"). We never store your IP address or precise location.',
           'Technical data: device and browser type, detected locally to show you the right install guide. Not sent to our servers.',
         ],
-        'We do not collect location, contacts, device files or payment data.',
+        'We do not collect precise location, contacts, device files or payment data.',
       ],
     },
     {
@@ -358,7 +360,7 @@ const EN_PRIVACY = {
       title: 'How long we keep data',
       paragraphs: [
         'Account data and reviews are kept for as long as the account exists. Deleting a review removes it immediately. When you request account deletion, we delete the user record and associated reviews within 30 days, unless the law requires retention.',
-        'Aggregated view and click counters contain no personal data and are kept indefinitely.',
+        'Aggregated view, click and country counters contain no personal data and are kept indefinitely.',
       ],
     },
     {

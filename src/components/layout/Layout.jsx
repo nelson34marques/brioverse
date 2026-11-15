@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+import PageLoading from '../ui/PageLoading.jsx'
 import Header from './Header.jsx'
 import Footer from './Footer.jsx'
 import BottomNav from './BottomNav.jsx'
@@ -18,7 +20,9 @@ export default function Layout() {
       <div className={styles.body}>
         <AdRail />
         <main className={styles.main}>
-          <Outlet />
+          <Suspense fallback={<PageLoading />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
       <Footer />

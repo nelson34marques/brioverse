@@ -4,6 +4,9 @@
 // A API key/secret do Cloudinary NÃO é usada e nunca deve entrar no site.
 // O link devolvido (res.cloudinary.com/…) fica em apps/{id}.iconUrl / .screenshots, tal como os links antigos.
 
+// Segurança do preset (não se resolve em código): em Cloudinary > Settings > Upload >
+// Upload presets > brioverse, limita Formatos permitidos (jpg/png/webp), tamanho máximo
+// (~10 MB), pasta (brioverse/) e, se possível, activa moderação ou um limite de uploads.
 const CLOUD = 'w8ii5ciy'
 const PRESET = 'brioverse' // Settings > Upload > Upload presets, Signing mode: Unsigned
 const ENDPOINT = `https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`

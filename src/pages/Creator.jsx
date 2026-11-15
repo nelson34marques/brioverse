@@ -5,6 +5,7 @@ import AppListItem from '../components/app/AppListItem.jsx'
 import ListEnd from '../components/app/ListEnd.jsx'
 import VerifiedIcon from '../components/ui/VerifiedIcon.jsx'
 import { useT } from '../hooks/useT.js'
+import { useMeta } from '../hooks/useMeta.js'
 import { useApps } from '../hooks/useApps.js'
 import { getCreator } from '../lib/creators.js'
 import browse from './Browse.module.css'
@@ -44,6 +45,13 @@ export default function Creator() {
 
   const name = creator?.name || apps[0]?.developerName || ''
   const ready = !loading && creator !== undefined
+
+  useMeta({
+    title: name || undefined,
+    description: creator?.description,
+    image: creator?.photoUrl,
+    noindex: ready && !creator && apps.length === 0,
+  })
 
   if (ready && !creator && apps.length === 0) return <Navigate to="/404" replace />
   if (!name) {

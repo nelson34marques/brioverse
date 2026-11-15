@@ -1,9 +1,13 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { createPortal } from 'react-dom'
+import { useFocusTrap } from '../../hooks/useFocusTrap.js'
 import styles from './Modal.module.css'
 
 export default function Modal({ open, onClose, title, children, footer }) {
+  const sheetRef = useRef(null)
+  useFocusTrap(open, sheetRef)
+
   useEffect(() => {
     if (!open) return undefined
     const onKey = (e) => e.key === 'Escape' && onClose()
@@ -20,7 +24,15 @@ export default function Modal({ open, onClose, title, children, footer }) {
 
   return createPortal(
     <div className={styles.backdrop} onClick={onClose} role="presentation">
-      <div className={styles.sheet} role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={sheetRef}
+        className={styles.sheet}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.handle} aria-hidden="true" />
         {title && <h2 className={styles.title}>{title}</h2>}
         <div className={styles.body}>{children}</div>

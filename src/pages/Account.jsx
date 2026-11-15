@@ -9,10 +9,10 @@ import { useAuth } from "../hooks/useAuth.js";
 import { usePrefs } from "../hooks/usePrefs.js";
 import VerifyEmailNotice from "../components/auth/VerifyEmailNotice.jsx";
 import { useDeveloper } from "../hooks/useDeveloper.js";
-import { useTheme } from "../hooks/useTheme.js";
 import { useInstallApp } from "../hooks/useInstallApp.js";
 import { InstallGuideModal } from "../components/layout/InstallBanner.jsx";
 import { logout } from "../lib/auth.js";
+import { DEVICES } from "../lib/device.js";
 import { SITE } from "../config/site.js";
 import styles from "./Account.module.css";
 
@@ -63,13 +63,22 @@ DevButton.propTypes = {
   developer: PropTypes.object,
 };
 
-/** Conta: perfil, preferências, desenvolvedor, aparência, legal e sessão. Mesmo desenho em PC e telemóvel. */
+/** Conta: perfil, preferências, desenvolvedor, (admin), instalar a app, legal e sessão. Mesmo desenho em PC e telemóvel. */
 export default function Account() {
-  const { t, lang, setLang } = useT();
+  const { t } = useT();
   const { profile, user, role } = useAuth();
   const { developer } = useDeveloper();
-  const { prefs, openOnboarding } = usePrefs();
-  const { theme, setTheme } = useTheme();
+  const { prefs, devices, openOnboarding, setDevices } = usePrefs();
+
+  /** Liga/desliga uma plataforma; nunca deixa ficar sem nenhuma (o detectado fica sempre). */
+  const toggleDevice = (key) => {
+    if (devices.includes(key)) {
+      if (devices.length === 1) return;
+      setDevices(devices.filter((d) => d !== key));
+    } else {
+      setDevices([...devices, key]);
+    }
+  };
   const installApp = useInstallApp();
 
   const name = profile?.name || user?.displayName || "";
@@ -118,17 +127,25 @@ export default function Account() {
             {t("account.edit_prefs")}
           </Button>
         </div>
-        <p className={styles.hint}>
-          {prefs.devices.length || prefs.interests.length ? (
-            <>
-              <strong>{summary(prefs.devices, (k) => `onboarding.${k}`, 2)}</strong>
-              {" · "}
-              {summary(prefs.interests, (k) => `categories.${k}`, 3)}
-            </>
-          ) : (
-            t("account.prefs_empty")
-          )}
-        </p>
+        <p className={styles.hint}>{t("account.prefs_hint")}</p>
+        <div className={styles.row}>
+          <span className={styles.label}>{t("account.platforms")}</span>
+          <div className={styles.chips} role="group" aria-label={t("account.platforms")}>
+            {DEVICES.map((d) => (
+              <Chip key={d} outline active={devices.includes(d)} onClick={() => toggleDevice(d)}>
+                {t(`onboarding.${d}`)}
+              </Chip>
+            ))}
+          </div>
+        </div>
+        <div className={styles.row}>
+          <span className={styles.label}>{t("account.interests")}</span>
+          <p className={styles.hint}>
+            {prefs.interests.length
+              ? summary(prefs.interests, (k) => `categories.${k}`, 4)
+              : t("account.none")}
+          </p>
+        </div>
       </section>
 
       <section className={styles.card}>
@@ -173,61 +190,23 @@ export default function Account() {
         </section>
       )}
 
-      <section className={styles.card}>
-        <h2 className={styles.h2}>{t("account.appearance")}</h2>
-        <div className={styles.row}>
-          <span className={styles.label}>{t("account.theme")}</span>
-          <div
-            className={styles.chips}
-            role="radiogroup"
-            aria-label={t("account.theme")}
-          >
-            <Chip
-              outline
-              active={theme === "light"}
-              onClick={() => setTheme("light")}
-            >
-              {t("theme.light")}
-            </Chip>
-            <Chip
-              outline
-              active={theme === "dark"}
-              onClick={() => setTheme("dark")}
-            >
-              {t("theme.dark")}
-            </Chip>
-          </div>
-        </div>
-        <div className={styles.row}>
-          <span className={styles.label}>{t("account.language")}</span>
-          <div
-            className={styles.chips}
-            role="radiogroup"
-            aria-label={t("account.language")}
-          >
-            <Chip outline active={lang === "pt"} onClick={() => setLang("pt")}>
-              {t("lang.pt")}
-            </Chip>
-            <Chip outline active={lang === "en"} onClick={() => setLang("en")}>
-              {t("lang.en")}
-            </Chip>
-          </div>
-        </div>
-        {installApp.status !== "no" && (
-          <div className={styles.row}>
-            <span className={styles.label}>{t("pwa.account_label")}</span>
-            {installApp.status === "installed" ? (
-              <p className={styles.hint}>{t("pwa.installed")}</p>
-            ) : (
-              <div className={styles.chips}>
-                <Button variant="secondary" size="sm" onClick={installApp.install}>
-                  {t("pwa.install_full")}
-                </Button>
-              </div>
+      {installApp.status !== "no" && (
+        <section className={styles.card}>
+          <div className={styles.cardHead}>
+            <h2 className={styles.h2}>{t("pwa.account_label")}</h2>
+            {installApp.status !== "installed" && (
+              <Button variant="secondary" size="sm" onClick={installApp.install}>
+                {t("pwa.install_full")}
+              </Button>
             )}
           </div>
-        )}
-      </section>
+          <p className={styles.hint}>
+            {installApp.status === "installed"
+              ? t("pwa.installed")
+              : t("pwa.subtitle", { host: window.location.host })}
+          </p>
+        </section>
+      )}
       <InstallGuideModal
         open={installApp.guideOpen}
         onClose={installApp.closeGuide}

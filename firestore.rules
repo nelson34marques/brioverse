@@ -34,6 +34,28 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stats']);
     }
 
+    // stats.byCountry só pode subir exactamente 1 num único código de país por escrita,
+    // validado pelo campo companheiro byCountryCode (sem ele, byCountry tem de ficar igual)
+    function onlyCountryBump() {
+      let after = request.resource.data.stats.get('byCountry', {});
+      let before = resource.data.stats.get('byCountry', {});
+      let diff = after.diff(before);
+      return diff.affectedKeys().size() == 0
+        || (request.resource.data.stats.get('byCountryCode', '').matches('^[A-Z]{2}$')
+          && diff.affectedKeys().hasOnly([request.resource.data.stats.get('byCountryCode', '')])
+          && after.get(request.resource.data.stats.get('byCountryCode', ''), 0)
+              - before.get(request.resource.data.stats.get('byCountryCode', ''), 0) == 1);
+    }
+
+    // avaliação do próprio utilizador para este app (id = appId_uid)
+    function hasReview(appId) {
+      return exists(/databases/$(database)/documents/reviews/$(appId + '_' + request.auth.uid));
+    }
+
+    function reviewRating(appId) {
+      return get(/databases/$(database)/documents/reviews/$(appId + '_' + request.auth.uid)).data.rating;
+    }
+
     function isUrl(s) {
       return s is string && s.size() <= 300 && s.matches('https?://.*');
     }
@@ -180,25 +202,33 @@ service cloud.firestore {
 
       // editar: o admin (status, featured, boost, verified, disabledReason…);
       // qualquer utilizador autenticado só pode tocar em stats.rating* (actualizado ao avaliar);
-      // qualquer pessoa pode somar exactamente 1 a stats.views ou stats.clicks (contadores);
+      // qualquer pessoa pode somar exactamente 1 a stats.views ou stats.clicks (contadores)
+      // e exactamente 1 a um único stats.byCountry.* (país estimado, validado por byCountryCode);
       // o criador edita o seu app (conteúdo válido, nova versão/novidades, pausar/retomar; recusado volta
       // a pending; não mexe em verified/featured/boost/stats/disabledReason nem sai de 'disabled')
       allow update: if isAdmin()
+        // stats de avaliação: só quem tem a sua review deste app. Criar/apagar tem de bater
+        // certo com a nota dessa review; editar (count ±0) só pode mexer a soma em ±4.
         || (signedIn()
           && onlyStats()
           && request.resource.data.stats.diff(resource.data.stats).affectedKeys()
               .hasOnly(['ratingAvg', 'ratingCount', 'ratingSum'])
-          // só pode entrar/sair/mudar uma avaliação de cada vez (1..5 estrelas)
+          && hasReview(appId)
           && request.resource.data.stats.ratingCount - resource.data.stats.get('ratingCount', 0) in [-1, 0, 1]
-          && request.resource.data.stats.ratingSum - resource.data.stats.get('ratingSum', 0) >= -5
-          && request.resource.data.stats.ratingSum - resource.data.stats.get('ratingSum', 0) <= 5
+          && request.resource.data.stats.get('ratingCount', 0) >= 0
+          && (request.resource.data.stats.ratingCount - resource.data.stats.get('ratingCount', 0) == 0
+            ? request.resource.data.stats.ratingSum - resource.data.stats.get('ratingSum', 0) >= -4
+              && request.resource.data.stats.ratingSum - resource.data.stats.get('ratingSum', 0) <= 4
+            : request.resource.data.stats.ratingSum - resource.data.stats.get('ratingSum', 0)
+                == (request.resource.data.stats.ratingCount - resource.data.stats.get('ratingCount', 0)) * reviewRating(appId))
           && request.resource.data.stats.ratingAvg >= 0
           && request.resource.data.stats.ratingAvg <= 5)
         || (onlyStats()
           && request.resource.data.stats.diff(resource.data.stats).affectedKeys()
-              .hasOnly(['views', 'clicks'])
+              .hasOnly(['views', 'clicks', 'byCountry', 'byCountryCode'])
           && request.resource.data.stats.get('views', 0) - resource.data.stats.get('views', 0) in [0, 1]
-          && request.resource.data.stats.get('clicks', 0) - resource.data.stats.get('clicks', 0) in [0, 1])
+          && request.resource.data.stats.get('clicks', 0) - resource.data.stats.get('clicks', 0) in [0, 1]
+          && onlyCountryBump())
         || (verified()
           && resource.data.developerId == request.auth.uid
           && resource.data.status != 'disabled'

@@ -4,7 +4,6 @@ import Button from '../ui/Button.jsx'
 import Modal from '../ui/Modal.jsx'
 import InstallGuide from './InstallGuide.jsx'
 import { useT } from '../../hooks/useT.js'
-import { usePrefs } from '../../hooks/usePrefs.js'
 import { useLibrary } from '../../hooks/useLibrary.js'
 import { appLinks } from '../../lib/device.js'
 import { trackClick } from '../../lib/stats.js'
@@ -17,7 +16,6 @@ import styles from './ActionButton.module.css'
  */
 export default function ActionButton({ app }) {
   const { t } = useT()
-  const { openOnboarding } = usePrefs()
   const { add: addToLibrary } = useLibrary()
   // como na Play Store: abrir/baixar conta como "ter" o app → entra na biblioteca e recebe avisos de versão nova
   const got = () => {
@@ -71,10 +69,6 @@ export default function ActionButton({ app }) {
         <InstallGuide
           app={app}
           onApk={() => setModal('apk')}
-          onChangeDevice={() => {
-            setModal(null)
-            openOnboarding()
-          }}
         />
       </Modal>
 

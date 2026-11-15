@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { loadApps, selectApps, getApp, cachedApps, loadFailed, subscribeApps } from '../lib/db.js'
+import { loadApps, selectApps, getApp, cachedApps, loadFailed, subscribeApps, subscribeAppsLive } from '../lib/db.js'
 
 /**
  * Todos os apps aprovados (carregados uma vez e partilhados).
@@ -15,6 +15,7 @@ export function useAllApps() {
     const unsub = subscribeApps((list) => {
       if (alive) setApps(list)
     })
+    subscribeAppsLive()
     if (!cachedApps()) {
       loadApps().then((list) => {
         if (!alive) return
@@ -59,14 +60,26 @@ export function useApp(id) {
     let alive = true
     setLoading(true)
     setNotFound(false)
-    getApp(id).then((a) => {
+
+    const apply = (a) => {
       if (!alive) return
       setApp(a)
       setNotFound(!a)
       setLoading(false)
+    }
+
+    getApp(id).then(apply)
+    // a lista em tempo real também actualiza a página do app (stats, versão, pausa)
+    const unsub = subscribeApps((list) => {
+      if (!alive || !list) return
+      const found = list.find((a) => a.id === id || a.slug === id)
+      if (found) apply(found)
+      else if (list.length) apply(null)
     })
+
     return () => {
       alive = false
+      unsub()
     }
   }, [id])
 

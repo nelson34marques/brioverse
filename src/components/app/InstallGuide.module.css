@@ -66,17 +66,4 @@
   font-size: var(--fs-xs);
 }
 
-.change {
-  align-self: flex-start;
-  background: none;
-  border: 0;
-  padding: 0;
-  color: var(--accent);
-  font-size: var(--fs-sm);
-  font-weight: 600;
-  cursor: pointer;
-}
 
-.change:hover {
-  text-decoration: underline;
-}

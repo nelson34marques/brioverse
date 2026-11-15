@@ -357,6 +357,32 @@
   font-weight: 600;
 }
 
+/* vistas por país */
+.crow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.cname {
+  flex: 0 0 132px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+.crow .bar {
+  flex: 1;
+}
+
+.ccount {
+  flex: 0 0 auto;
+  font-size: var(--fs-sm);
+}
+
 /* foto/logótipo do criador no perfil */
 .profilePhoto {
   width: 72px;

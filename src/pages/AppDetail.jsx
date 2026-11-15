@@ -11,6 +11,7 @@ import AppRow from "../components/app/AppRow.jsx";
 import Reviews from "../components/app/Reviews.jsx";
 import { Star } from "../components/app/Rating.jsx";
 import { useT } from "../hooks/useT.js";
+import { useMeta } from "../hooks/useMeta.js";
 import { useApp, useApps } from "../hooks/useApps.js";
 import { useReviews } from "../hooks/useReviews.js";
 import { useLibrary } from "../hooks/useLibrary.js";
@@ -29,6 +30,13 @@ export default function AppDetail() {
   const hasUpdate = Boolean(libEntry && libEntry.seenCode < app.versionCode);
   const whatsNew = app ? app.changelog || app.releases?.[0]?.notes || "" : "";
   const { summary: ratingSummary } = reviewsState;
+
+  useMeta({
+    title: app ? app.title : notFound ? t("not_found.title") : undefined,
+    description: app?.shortDescription,
+    image: app?.iconUrl,
+    noindex: notFound,
+  });
 
   useEffect(() => {
     if (app?.id) trackView(app.id);

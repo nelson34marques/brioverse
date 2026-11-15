@@ -4,7 +4,7 @@ import Button from '../ui/Button.jsx'
 import Chip from '../ui/Chip.jsx'
 import { usePrefs } from '../../hooks/usePrefs.js'
 import { useT } from '../../hooks/useT.js'
-import { appLinks } from '../../lib/device.js'
+import { appLinks, DEVICES } from '../../lib/device.js'
 import { sizeMb } from '../../utils/format.js'
 import styles from './InstallGuide.module.css'
 
@@ -13,12 +13,12 @@ import styles from './InstallGuide.module.css'
  * escolheu no onboarding (ou o detectado), com o guia certo para cada um:
  * PWA (browser), APK (Android) ou instalador para computador.
  */
-export default function InstallGuide({ app, onApk, onChangeDevice }) {
+export default function InstallGuide({ app, onApk }) {
   const { t } = useT()
   const { devices, detected } = usePrefs()
   const links = appLinks(app)
-  const [active, setActive] = useState(() => (devices.includes(detected.os) ? detected.os : devices[0]))
-  const current = devices.includes(active) ? active : devices[0]
+  const [active, setActive] = useState(() => (devices.includes(detected.os) ? detected.os : devices[0] ?? DEVICES[0]))
+  const current = DEVICES.includes(active) ? active : devices[0] ?? DEVICES[0]
   const isHere = current === detected.os
 
   const Steps = ({ keys }) => (
@@ -104,24 +104,17 @@ export default function InstallGuide({ app, onApk, onChangeDevice }) {
     <div className={styles.wrap}>
       <p className={styles.intro}>{t(links.web ? 'install.intro_pwa' : 'install.intro_apk')}</p>
 
-      {devices.length > 1 && (
-        <div className={styles.tabs} role="tablist" aria-label={t('onboarding.devices_title')}>
-          {devices.map((d) => (
-            <Chip key={d} active={d === current} onClick={() => setActive(d)}>
-              {t(`onboarding.${d}`)}
-            </Chip>
-          ))}
-        </div>
-      )}
-      {devices.length === 1 && <p className="eyebrow">{t('install.on_device', { device: deviceName })}</p>}
+      <div className={styles.tabs} role="tablist" aria-label={t('onboarding.devices_title')}>
+        {DEVICES.map((d) => (
+          <Chip key={d} active={d === current} onClick={() => setActive(d)}>
+            {t(`onboarding.${d}`)}
+          </Chip>
+        ))}
+      </div>
 
       {body}
 
       {links.web && <p className={styles.note}>{t('install.no_install_ok')}</p>}
-
-      <button type="button" className={styles.change} onClick={onChangeDevice}>
-        {t('install.change_device')}
-      </button>
     </div>
   )
 }
@@ -129,5 +122,4 @@ export default function InstallGuide({ app, onApk, onChangeDevice }) {
 InstallGuide.propTypes = {
   app: PropTypes.object.isRequired,
   onApk: PropTypes.func.isRequired,
-  onChangeDevice: PropTypes.func.isRequired,
 }

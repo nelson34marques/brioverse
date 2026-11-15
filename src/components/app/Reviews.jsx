@@ -23,7 +23,7 @@ import styles from './Reviews.module.css'
 export default function Reviews({ app, state }) {
   const { t } = useT()
   const { user, isAuthenticated, emailVerified } = useAuth()
-  const { reviews, setReviews, loading, reload, summary } = state
+  const { reviews, setReviews, loading, loadingMore, hasMore, loadMore, reload, summary } = state
   const [open, setOpen] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [replyTo, setReplyTo] = useState(null) // review a responder (modal)
@@ -136,6 +136,14 @@ export default function Reviews({ app, state }) {
         />
       )}
 
+      {!loading && hasMore && (
+        <div className={styles.loadMore}>
+          <Button variant="secondary" onClick={loadMore} disabled={loadingMore}>
+            {loadingMore ? t('common.loading') : t('reviews.load_more')}
+          </Button>
+        </div>
+      )}
+
       <Modal open={open} onClose={() => !busy && setOpen(false)} title={t('reviews.form_title', { app: app.title })}>
         {open && <ReviewForm key={mine?.updatedAt ?? 'new'} initial={mine ?? undefined} busy={busy} error={error} onSubmit={submit} onCancel={() => setOpen(false)} />}
       </Modal>
@@ -190,6 +198,9 @@ Reviews.propTypes = {
     reviews: PropTypes.array.isRequired,
     setReviews: PropTypes.func.isRequired,
     loading: PropTypes.bool,
+    loadingMore: PropTypes.bool,
+    hasMore: PropTypes.bool,
+    loadMore: PropTypes.func,
     reload: PropTypes.func.isRequired,
     summary: PropTypes.object.isRequired,
   }).isRequired,

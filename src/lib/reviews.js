@@ -4,6 +4,7 @@ import {
   collection,
   doc,
   getDocs,
+  onSnapshot,
   query,
   where,
   limit,
@@ -95,18 +96,48 @@ export function authorFromUser(user) {
   }
 }
 
-/** Avaliações de um app, mais recentes primeiro. */
-export async function listReviews(appId) {
+/**
+ * Avaliações de um app, mais recentes primeiro. `max` permite pedir mais do que
+ * a primeira página (o cliente aumenta o limite em vez de usar startAfter, que
+ * exigiria um índice composto appId + createdAt).
+ */
+export async function listReviews(appId, max = 100) {
+  const take = Math.max(1, Math.min(1000, Math.round(Number(max) || 100)))
   if (!isFirebaseConfigured) {
     return Object.entries(localAll())
       .map(([id, d]) => normalize(id, d))
       .filter((r) => r.appId === appId)
       .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, take)
   }
   // Só `where` (sem orderBy) para não exigir índice composto; ordena no cliente.
-  const q = query(collection(db, 'reviews'), where('appId', '==', appId), limit(100))
+  const q = query(collection(db, 'reviews'), where('appId', '==', appId), limit(take))
   const snap = await withTimeout(getDocs(q), 6000)
   return snap.docs.map((d) => normalize(d.id, d.data())).sort((a, b) => b.createdAt - a.createdAt)
+}
+
+/**
+ * Avaliações em tempo real. Devolve a função para cancelar o listener.
+ * Sem Firebase, emite a lista local uma vez (não há eventos entre separadores).
+ */
+export function subscribeReviews(appId, max, onData, onError) {
+  const take = Math.max(1, Math.min(1000, Math.round(Number(max) || 100)))
+  if (!isFirebaseConfigured) {
+    listReviews(appId, take).then(onData).catch((err) => onError?.(err))
+    return () => {}
+  }
+  // Só `where` (sem orderBy) para não exigir índice composto; ordena no cliente.
+  const q = query(collection(db, 'reviews'), where('appId', '==', appId), limit(take))
+  return onSnapshot(
+    q,
+    (snap) => {
+      onData(snap.docs.map((d) => normalize(d.id, d.data())).sort((a, b) => b.createdAt - a.createdAt))
+    },
+    (err) => {
+      console.warn('[brioverse] tempo real das reviews indisponível:', err?.code || err?.message)
+      onError?.(err)
+    },
+  )
 }
 
 /**
@@ -201,8 +232,9 @@ export async function deleteReview({ app, user, previous }) {
     localWrite(all)
     return
   }
-  await deleteDoc(doc(db, 'reviews', id))
+  // primeiro os stats (as regras exigem que a review ainda exista), depois apagar
   await bumpStats(app.id, previous?.rating ?? null, null)
+  await deleteDoc(doc(db, 'reviews', id))
 }
 
 /** Ajusta ratingCount/ratingSum/ratingAvg do app de forma incremental. */

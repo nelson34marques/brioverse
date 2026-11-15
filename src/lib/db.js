@@ -1,6 +1,6 @@
 // Acesso a dados. Lê apps aprovados do Firestore (cache local primeiro, depois servidor).
 // Sem Firebase configurado a loja fica vazia (não há dados de demonstração).
-import { collection, getDocs, getDocsFromCache, query, where, doc, getDoc } from 'firebase/firestore'
+import { collection, getDocs, getDocsFromCache, onSnapshot, query, where, doc, getDoc } from 'firebase/firestore'
 import { directImageUrl } from './images.js'
 import { db, isFirebaseConfigured } from './firebase.js'
 import { comparators, rankContext } from './ranking.js'
@@ -46,6 +46,16 @@ function toMillis(v) {
 const webUrl = (s) => (typeof s === 'string' && /^https?:\/\/\S+$/i.test(s.trim()) ? s.trim() : null)
 const imageUrl = (s) => webUrl(directImageUrl(s))
 
+// país estimado por view: só códigos ISO válidos e contadores inteiros; nunca vaza byCountryCode
+function sanitizeByCountry(v) {
+  if (!v || typeof v !== 'object') return {}
+  const out = {}
+  for (const [code, n] of Object.entries(v)) {
+    if (/^[A-Z]{2}$/.test(code)) out[code] = Math.max(0, Math.min(1e9, Math.round(Number(n) || 0)))
+  }
+  return out
+}
+
 export function normalizeApp(id, d) {
   return {
     id,
@@ -75,7 +85,16 @@ export function normalizeApp(id, d) {
     changelog: typeof d.changelog === 'string' ? d.changelog : '',
     releases: Array.isArray(d.releases) ? d.releases.map((r) => ({ version: r?.version || '', notes: r?.notes || '', at: toMillis(r?.at) })) : [],
     releasedAt: toMillis(d.releasedAt) || toMillis(d.updatedAt ?? d.createdAt),
-    stats: { views: 0, clicks: 0, ratingAvg: 0, ratingCount: 0, ...(d.stats ?? {}) },
+    stats: (() => {
+      const raw = d.stats ?? {}
+      return {
+        views: Number(raw.views) || 0,
+        clicks: Number(raw.clicks) || 0,
+        ratingAvg: Number(raw.ratingAvg) || 0,
+        ratingCount: Number(raw.ratingCount) || 0,
+        byCountry: sanitizeByCountry(raw.byCountry),
+      }
+    })(),
     createdAt: toMillis(d.createdAt),
     updatedAt: toMillis(d.updatedAt ?? d.createdAt),
   }
@@ -95,13 +114,37 @@ export function loadFailed() {
   return failed && !cache
 }
 
-/** Avisa quando a lista muda (ex.: cache local substituída pelo servidor). */
+/** Avisa quando a lista muda (cache local, servidor ou listener em tempo real). */
 export function subscribeApps(fn) {
   listeners.add(fn)
   return () => listeners.delete(fn)
 }
 
 const approvedQuery = () => query(collection(db, 'apps'), where('status', '==', 'approved'))
+
+let liveStarted = false
+
+/**
+ * Mantém a lista de apps aprovados em tempo real (aprovações, edições, pausas).
+ * Um único listener global actualiza a cache e avisa `subscribeApps`; páginas e
+ * detalhes vêem as mudanças sem recarregar. Sem Firebase é um no-op.
+ */
+export function subscribeAppsLive() {
+  if (!isFirebaseConfigured || liveStarted) return
+  liveStarted = true
+  onSnapshot(
+    approvedQuery(),
+    (snap) => {
+      cache = snap.docs.map((d) => normalizeApp(d.id, d.data()))
+      source = 'firestore'
+      failed = false
+      notify()
+    },
+    (err) => {
+      console.warn('[brioverse] tempo real da loja indisponível:', err?.code || err?.message)
+    },
+  )
+}
 
 async function fetchFromServer() {
   const snap = await withTimeout(getDocs(approvedQuery()), SERVER_TIMEOUT)

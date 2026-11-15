@@ -1,4 +1,6 @@
+import { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
+import PageLoading from '../ui/PageLoading.jsx'
 import Backdrop from '../ui/Backdrop.jsx'
 import DevHeader from './DevHeader.jsx'
 import DevBottomNav from './DevBottomNav.jsx'
@@ -16,7 +18,9 @@ export default function DevLayout() {
         <Backdrop variant="dev" />
         <DevHeader />
         <main className={styles.main}>
-          <Outlet />
+          <Suspense fallback={<PageLoading />}>
+            <Outlet />
+          </Suspense>
         </main>
         <DevBottomNav />
       </div>

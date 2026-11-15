@@ -15,8 +15,12 @@ function detectLang() {
   } catch {
     /* localStorage indisponível */
   }
-  const nav = (navigator.language || '').slice(0, 2).toLowerCase()
-  return DICTS[nav] ? nav : DEFAULT_LANG
+  const list = Array.isArray(navigator.languages) ? navigator.languages : [navigator.language]
+  for (const entry of list) {
+    const short = String(entry || '').slice(0, 2).toLowerCase()
+    if (DICTS[short]) return short
+  }
+  return DEFAULT_LANG
 }
 
 function lookup(dict, path) {
@@ -28,15 +32,31 @@ export function I18nProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.lang = lang
-    try {
-      localStorage.setItem(STORAGE_KEY, lang)
-    } catch {
-      /* ignorar */
-    }
   }, [lang])
 
+  // segue a língua do browser enquanto o utilizador não escolher outra; a escolha manual fica guardada
+  useEffect(() => {
+    const onLanguageChange = () => {
+      try {
+        if (localStorage.getItem(STORAGE_KEY)) return
+      } catch {
+        /* sem storage: redetecta sempre */
+      }
+      setLangState(detectLang())
+    }
+    window.addEventListener('languagechange', onLanguageChange)
+    return () => window.removeEventListener('languagechange', onLanguageChange)
+  }, [])
+
   const setLang = useCallback((next) => {
-    if (DICTS[next]) setLangState(next)
+    if (DICTS[next]) {
+      setLangState(next)
+      try {
+        localStorage.setItem(STORAGE_KEY, next)
+      } catch {
+        /* localStorage indisponível: fica só nesta sessão */
+      }
+    }
   }, [])
 
   const t = useCallback(

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { createPortal } from 'react-dom'
 import { useT } from '../../hooks/useT.js'
+import { useFocusTrap } from '../../hooks/useFocusTrap.js'
 import styles from './Lightbox.module.css'
 
 /**
@@ -12,22 +13,22 @@ import styles from './Lightbox.module.css'
 export default function Lightbox({ images, index, onIndex, onClose, alt = '' }) {
   const { t } = useT()
   const closeRef = useRef(null)
+  const dialogRef = useRef(null)
   const touchX = useRef(null)
   const open = index != null && index >= 0 && index < images.length
   const many = images.length > 1
 
   const go = useCallback((step) => onIndex((index + step + images.length) % images.length), [index, images.length, onIndex])
 
-  // trava o scroll da página e devolve o foco a quem abriu
+  useFocusTrap(open, dialogRef)
+
+  // trava o scroll da página; o foco é tratado pelo useFocusTrap
   useEffect(() => {
     if (!open) return undefined
-    const opener = document.activeElement
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    closeRef.current?.focus()
     return () => {
       document.body.style.overflow = prev
-      opener?.focus?.()
     }
   }, [open])
 
@@ -59,7 +60,17 @@ export default function Lightbox({ images, index, onIndex, onClose, alt = '' }) 
   }
 
   return createPortal(
-    <div className={styles.backdrop} role="dialog" aria-modal="true" aria-label={alt} onClick={onClose} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <div
+      ref={dialogRef}
+      className={styles.backdrop}
+      role="dialog"
+      aria-modal="true"
+      aria-label={alt}
+      tabIndex={-1}
+      onClick={onClose}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
       <img key={images[index]} className={styles.img} src={images[index]} alt={`${alt} ${index + 1}`.trim()} referrerPolicy="no-referrer" onClick={(e) => e.stopPropagation()} />
 
       <button ref={closeRef} type="button" className={`${styles.btn} ${styles.close}`} onClick={stop(onClose)} aria-label={t('common.close')} title={t('common.close')}>

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { PrefsContext } from './contexts.js'
 import { useAuth } from '../hooks/useAuth.js'
-import { detectDevice } from '../lib/device.js'
+import { detectDevice, DEVICES } from '../lib/device.js'
 import { readPrefs, writePrefs, cleanPrefs, syncPrefsToCloud } from '../lib/prefs.js'
 
 /**
@@ -36,6 +36,11 @@ export function PrefsProvider({ children }) {
     [user],
   )
 
+  const setDevices = useCallback((next) => {
+    const clean = Array.isArray(next) ? next.filter((d) => DEVICES.includes(d)) : []
+    save({ devices: clean })
+  }, [save])
+
   const value = useMemo(
     () => ({
       prefs,
@@ -43,6 +48,7 @@ export function PrefsProvider({ children }) {
       /** Dispositivos a considerar: os escolhidos ou, sem onboarding, o detectado. */
       devices: prefs.devices.length ? prefs.devices : [detected.os],
       onboardingOpen: !prefs.onboarded || forcedOpen,
+      setDevices,
       completeOnboarding: ({ devices, interests }) => {
         save({ onboarded: true, devices, interests })
         setForcedOpen(false)
@@ -54,7 +60,7 @@ export function PrefsProvider({ children }) {
       openOnboarding: () => setForcedOpen(true),
       closeOnboarding: () => setForcedOpen(false),
     }),
-    [prefs, detected, forcedOpen, save],
+    [prefs, detected, forcedOpen, save, setDevices],
   )
 
   return <PrefsContext.Provider value={value}>{children}</PrefsContext.Provider>

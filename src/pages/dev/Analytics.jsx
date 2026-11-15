@@ -19,6 +19,24 @@ export default function DevAnalytics() {
   const max = Math.max(1, ...apps.map((a) => a.stats.views || 0))
   const rows = [...apps].sort((a, b) => (b.stats.views || 0) - (a.stats.views || 0))
 
+  // views por país (estimado): soma os contadores agregados de cada app do criador
+  const byCountry = new Map()
+  for (const a of apps) {
+    for (const [code, n] of Object.entries(a.stats.byCountry ?? {})) {
+      byCountry.set(code, (byCountry.get(code) || 0) + n)
+    }
+  }
+  const countryRows = [...byCountry.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
+  const maxCountry = Math.max(1, ...countryRows.map(([, n]) => n))
+  const regionName = (code) => {
+    if (code === 'XX') return t('dev.country_unknown')
+    try {
+      return new Intl.DisplayNames([lang], { type: 'region' }).of(code) || code
+    } catch {
+      return code
+    }
+  }
+
   return (
     <Container className={styles.page}>
       <header className={styles.header}>
@@ -45,6 +63,26 @@ export default function DevAnalytics() {
           <span>{t('dev.stat_rating_n', { n: ratings })}</span>
         </li>
       </ul>
+
+      <section className={styles.card}>
+        <h2 className={styles.h2}>{t('dev.by_country')}</h2>
+        {countryRows.length === 0 ? (
+          <p className={styles.hint}>{t('dev.by_country_empty')}</p>
+        ) : (
+          <ul className={styles.rows}>
+            {countryRows.map(([code, n]) => (
+              <li key={code} className={styles.crow}>
+                <span className={styles.cname}>{regionName(code)}</span>
+                <span className={styles.bar} aria-hidden="true">
+                  <span className={styles.barFill} style={{ width: `${Math.max(2, (n / maxCountry) * 100)}%` }} />
+                </span>
+                <strong className={styles.ccount}>{compactNumber(n, lang)}</strong>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className={styles.hint}>{t('dev.by_country_note')}</p>
+      </section>
 
       <section className={styles.card}>
         <h2 className={styles.h2}>{t('dev.per_app')}</h2>
